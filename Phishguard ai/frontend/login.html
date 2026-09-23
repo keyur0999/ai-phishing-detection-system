@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard AI | Authentication</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Auth Page Dedicated Styles */
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background:
+                radial-gradient(circle at 50% 20%, rgba(14, 165, 233, 0.15), transparent 45%),
+                radial-gradient(circle at 80% 80%, rgba(37, 99, 235, 0.1), transparent 40%),
+                #050b14;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-back-link {
+            position: absolute;
+            top: 25px;
+            left: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 600;
+            transition: color 0.2s ease;
+            z-index: 10;
+        }
+
+        .auth-back-link:hover {
+            color: #38bdf8;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            background: rgba(10, 22, 38, 0.88);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 20px;
+            padding: 38px 32px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5), 0 0 40px rgba(14, 165, 233, 0.12);
+            position: relative;
+            z-index: 5;
+            animation: authFadeIn 0.35s ease-out;
+        }
+
+        @keyframes authFadeIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .auth-header .logo {
+            justify-content: center;
+            margin-bottom: 14px;
+        }
+
+        .auth-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 6px;
+        }
+
+        .auth-header p {
+            font-size: 13px;
+            color: #8191a6;
+        }
+
+        .auth-toggle-tabs {
+            display: flex;
+            background: #060c16;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+
+        .auth-tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .auth-tab-btn.active {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.35);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .password-input-wrap {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .toggle-password:hover {
+            color: #38bdf8;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 22px;
+        }
+
+        .remember-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .form-options a {
+            color: #38bdf8;
+            transition: color 0.2s ease;
+        }
+
+        .form-options a:hover {
+            text-decoration: underline;
+        }
+
+        .auth-submit-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.35);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .auth-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(14, 165, 233, 0.45);
+        }
+
+        .auth-submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .auth-submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .auth-alert {
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 18px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auth-alert.error {
+            display: flex;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #f87171;
+        }
+
+        .auth-alert.success {
+            display: flex;
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: #4ade80;
+        }
+
+        .auth-footer-security {
+            margin-top: 25px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .auth-footer-security span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+    </style>
+</head>
+<body class="auth-page">
+
+    <a href="/" class="auth-back-link">
+        <span>←</span> Back to PhishGuard
+    </a>
+
+    <div class="auth-card">
+        <div class="auth-header">
+            <a href="/" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard <strong>AI</strong></span>
+            </a>
+            <h2 id="authHeading">Welcome Back</h2>
+            <p id="authSubheading">Access your security dashboard and scan history</p>
+        </div>
+
+        <div class="auth-toggle-tabs">
+            <button class="auth-tab-btn active" id="tabBtnLogin" onclick="switchAuthTab('login')">Sign In</button>
+            <button class="auth-tab-btn" id="tabBtnRegister" onclick="switchAuthTab('register')">Create Account</button>
+        </div>
+
+        <div class="auth-alert" id="authAlert"></div>
+
+        <!-- ================= LOGIN FORM ================= -->
+        <form class="auth-form active" id="loginForm">
+            <div class="form-group">
+                <label for="loginIdentifier">Username or Email</label>
+                <input type="text" id="loginIdentifier" class="scanner-input" placeholder="e.g. security_lead or user@org.com" required autocomplete="username" />
+            </div>
+
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <div class="password-input-wrap">
+                    <input type="password" id="loginPassword" class="scanner-input" placeholder="Enter your password" required autocomplete="current-password" />
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)">👁️</button>
+                </div>
+            </div>
+
+            <div class="form-options">
+                <label class="remember-wrap">
+                    <input type="checkbox" id="loginRemember" checked />
+                    <span>Remember me</span>
+                </label>
+                <a href="javascript:void(0)" onclick="alert('Password reset link has been dispatched to your registered recovery contact.')">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="auth-submit-btn" id="btnLoginSubmit">
+                <span>Sign In</span> <span>→</span>
+            </button>
+        </form>
+
+        <!-- ================= REGISTER FORM ================= -->
+        <form class="auth-form" id="registerForm">
+            <div class="form-group">
+                <label for="regUsername">Choose Username</label>
+                <input type="text" id="regUsername" class="scanner-input" placeholder="e.g. cyber_analyst" required autocomplete="username" />
+            </div>
+
+            <div class="form-group">
+                <label for="regEmail">Email Address (Optional)</label>
+                <input type="email" id="regEmail" class="scanner-input" placeholder="e.g. analyst@security.org" autocomplete="email" />
+            </div>
+
+            <div class="form-group">
+                <label for="regPassword">Password (Min. 6 characters)</label>
+                <div class="password-input-wrap">
+                    <input type="password" id="regPassword" class="scanner-input" placeholder="Create strong password" required autocomplete="new-password" />
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPassword', this)">👁️</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="regPasswordConfirm">Confirm Password</label>
+                <div class="password-input-wrap">
+                    <input type="password" id="regPasswordConfirm" class="scanner-input" placeholder="Repeat your password" required autocomplete="new-password" />
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPasswordConfirm', this)">👁️</button>
+                </div>
+            </div>
+
+            <button type="submit" class="auth-submit-btn" id="btnRegisterSubmit">
+                <span>Create Secure Account</span> <span>→</span>
+            </button>
+        </form>
+
+        <div class="auth-footer-security">
+            <span>🔒 256-bit Encrypted</span>
+            <span>🛡️ SQLite Audited</span>
+            <span>⚡ AI Protected</span>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = (window.location.protocol.startsWith("http") && (window.location.port === "5000" || window.location.port === "5001"))
+            ? ""
+            : "http://127.0.0.1:5000";
+
+        function switchAuthTab(mode) {
+            const loginForm = document.getElementById("loginForm");
+            const regForm = document.getElementById("registerForm");
+            const tabBtnLogin = document.getElementById("tabBtnLogin");
+            const tabBtnReg = document.getElementById("tabBtnRegister");
+            const heading = document.getElementById("authHeading");
+            const subheading = document.getElementById("authSubheading");
+            const alertBox = document.getElementById("authAlert");
+
+            alertBox.className = "auth-alert";
+            alertBox.style.display = "none";
+
+            if (mode === "register") {
+                loginForm.classList.remove("active");
+                regForm.classList.add("active");
+                tabBtnLogin.classList.remove("active");
+                tabBtnReg.classList.add("active");
+                heading.textContent = "Create Account";
+                subheading.textContent = "Start scanning threats with a personalized security profile";
+                document.getElementById("regUsername").focus();
+            } else {
+                regForm.classList.remove("active");
+                loginForm.classList.add("active");
+                tabBtnReg.classList.remove("active");
+                tabBtnLogin.classList.add("active");
+                heading.textContent = "Welcome Back";
+                subheading.textContent = "Access your security dashboard and scan history";
+                document.getElementById("loginIdentifier").focus();
+            }
+        }
+
+        function togglePasswordVisibility(fieldId, btn) {
+            const field = document.getElementById(fieldId);
+            if (field.type === "password") {
+                field.type = "text";
+                btn.textContent = "🔒";
+            } else {
+                field.type = "password";
+                btn.textContent = "👁️";
+            }
+        }
+
+        function showAlert(msg, isSuccess = false) {
+            const alertBox = document.getElementById("authAlert");
+            alertBox.className = isSuccess ? "auth-alert success" : "auth-alert error";
+            alertBox.innerHTML = (isSuccess ? "<span>✓</span> " : "<span>⚠️</span> ") + msg;
+            alertBox.style.display = "flex";
+        }
+
+        // --- Handle Login ---
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("btnLoginSubmit");
+            const identifier = document.getElementById("loginIdentifier").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            btn.disabled = true;
+            btn.innerHTML = "<span>Authenticating...</span>";
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ identifier, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showAlert("Authentication successful! Redirecting...", true);
+                    localStorage.setItem("phishguard_user", JSON.stringify(data.user));
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 800);
+                } else {
+                    showAlert(data.message || "Login failed. Please check credentials.");
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert("Could not connect to authentication service.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "<span>Sign In</span> <span>→</span>";
+            }
+        });
+
+        // --- Handle Registration ---
+        document.getElementById("registerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("btnRegisterSubmit");
+            const username = document.getElementById("regUsername").value.trim();
+            const email = document.getElementById("regEmail").value.trim();
+            const password = document.getElementById("regPassword").value;
+            const confirm = document.getElementById("regPasswordConfirm").value;
+
+            if (password !== confirm) {
+                showAlert("Passwords do not match.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = "<span>Creating Account...</span>";
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ username, email, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showAlert("Account created successfully! Redirecting...", true);
+                    localStorage.setItem("phishguard_user", JSON.stringify(data.user));
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 900);
+                } else {
+                    showAlert(data.message || "Registration failed.");
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert("Could not connect to registration service.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "<span>Create Secure Account</span> <span>→</span>";
+            }
+        });
+
+        // Check if URL has #register or ?tab=register
+        if (window.location.hash === "#register" || window.location.search.includes("register")) {
+            switchAuthTab("register");
+        }
+    </script>
+</body>
+</html>

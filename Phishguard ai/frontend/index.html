@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PhishGuard AI | Intelligent Phishing Detection</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+
+    <header class="navbar">
+        <div class="container nav-container">
+
+            <a href="#home" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard <strong>AI</strong></span>
+            </a>
+
+            <nav class="nav-links" id="navLinks">
+                <a href="#home" class="active">Home</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <a href="/reports" class="nav-reports-link" id="navReportsLink">
+                    Reports <span class="nav-pending-badge" id="navReportsPendingBadge" style="display: none;">0</span>
+                </a>
+                <a href="#detection" class="nav-button">Get Started</a>
+                <div id="navAuthSection" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <a href="/login" class="secondary-button" id="navLoginBtn" style="padding: 8px 16px; font-size: 13px;">
+                        <span>🔑</span> Sign In
+                    </a>
+                    <div id="navUserBadge" style="display: none; align-items: center; gap: 10px;">
+                        <span style="font-size: 13px; color: #38bdf8; font-weight: 700;" id="navUsername">👤 User</span>
+                        <button id="navLogoutBtn" class="secondary-button" style="padding: 6px 12px; font-size: 12px; border-color: rgba(239, 68, 68, 0.4); color: #f87171; cursor: pointer;" title="Sign Out">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <button class="menu-button" id="menuButton" aria-label="Open menu">
+                ☰
+            </button>
+
+        </div>
+    </header>
+
+
+    <main>
+
+        <!-- ================= HERO ================= -->
+
+        <section class="hero" id="home">
+
+            <div class="container hero-container">
+
+                <div class="hero-content">
+
+                    <div class="badge">
+                        <span class="pulse-dot"></span>
+                        AI-POWERED CYBERSECURITY
+                    </div>
+
+                    <h1>
+                        Detect Phishing.
+                        <span>Before It Detects You.</span>
+                    </h1>
+
+                    <p class="hero-description">
+                        AI-powered protection against phishing emails,
+                        malicious URLs, and dangerous QR codes.
+                    </p>
+
+                    <div class="hero-buttons">
+                        <a href="#detection" class="primary-button">
+                            Start Scanning <span>→</span>
+                        </a>
+
+                        <a href="#how-it-works" class="secondary-button">
+                            Learn More
+                        </a>
+                    </div>
+
+                    <div class="trust-text">
+                        <span>✓ AI-powered</span>
+                        <span>✓ Real-time analysis</span>
+                        <span>✓ Multi-channel protection</span>
+                    </div>
+
+                </div>
+
+
+                <!-- Cybersecurity Visual -->
+
+                <div class="hero-visual">
+
+                    <div class="security-circle circle-one"></div>
+                    <div class="security-circle circle-two"></div>
+
+                    <div class="orbit orbit-one">
+                        <div class="orbit-icon email-icon">✉</div>
+                    </div>
+
+                    <div class="orbit orbit-two">
+                        <div class="orbit-icon link-icon">🔗</div>
+                    </div>
+
+                    <div class="orbit orbit-three">
+                        <div class="orbit-icon qr-icon">▦</div>
+                    </div>
+
+                    <div class="shield-container">
+
+                        <div class="shield-glow"></div>
+
+                        <div class="shield">
+                            <div class="shield-symbol">✓</div>
+                        </div>
+
+                        <div class="secure-label">
+                            <span class="pulse-dot"></span>
+                            SYSTEM SECURE
+                        </div>
+
+                    </div>
+
+                    <div class="floating-card card-top">
+                        <span class="card-icon">⚡</span>
+                        <div>
+                            <small>AI ANALYSIS</small>
+                            <strong>Active</strong>
+                        </div>
+                    </div>
+
+                    <div class="floating-card card-bottom">
+                        <span class="safe-icon">✓</span>
+                        <div>
+                            <small>THREAT STATUS</small>
+                            <strong>Protected</strong>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= DETECTION TYPES ================= -->
+
+        <section class="detection-section" id="detection">
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div class="small-label">
+                        MULTI-CHANNEL PROTECTION
+                    </div>
+
+                    <h2>
+                        Protect Yourself From
+                        <span>Every Phishing Channel</span>
+                    </h2>
+
+                    <p>
+                        One intelligent security platform designed to
+                        identify threats across multiple attack vectors.
+                    </p>
+
+                </div>
+
+
+                <div class="detection-grid">
+
+                    <!-- Email -->
+
+                    <div class="detection-card" id="cardEmail" style="cursor: pointer;">
+
+                        <div class="card-number">01</div>
+
+                        <div class="detection-icon email-color">
+                            ✉
+                        </div>
+
+                        <h3>Email Detection</h3>
+
+                        <p>
+                            Analyze suspicious emails and identify
+                            phishing indicators before they become a threat.
+                        </p>
+
+                        <button class="card-button" id="btnSelectEmail">
+                            Email Security <span>→</span>
+                        </button>
+
+                    </div>
+
+
+                    <!-- URL -->
+
+                    <div class="detection-card" id="cardUrl" style="cursor: pointer;">
+
+                        <div class="card-number">02</div>
+
+                        <div class="detection-icon url-color">
+                            🔗
+                        </div>
+
+                        <h3>URL Detection</h3>
+
+                        <p>
+                            Check suspicious links before visiting
+                            potentially dangerous websites.
+                        </p>
+
+                        <button class="card-button" id="btnSelectUrl">
+                            Scan URL <span>→</span>
+                        </button>
+
+                    </div>
+
+
+                    <!-- QR -->
+
+                    <div class="detection-card" id="cardQr" style="cursor: pointer;">
+
+                        <div class="card-number">03</div>
+
+                        <div class="detection-icon qr-color">
+                            ▦
+                        </div>
+
+                        <h3>QR Code Detection</h3>
+
+                        <p>
+                            Detect malicious links hidden inside
+                            QR codes before opening them.
+                        </p>
+
+                        <button class="card-button" id="btnSelectQr">
+                            Scan QR <span>→</span>
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- ================= INTERACTIVE SCANNER CONSOLE ================= -->
+                <div class="scanner-wrapper" id="scannerConsole">
+                    <div class="scanner-header">
+                        <div class="scanner-tabs">
+                            <button class="tab-btn active" data-tab="url"><span class="tab-icon">🔗</span> URL Scanner</button>
+                            <button class="tab-btn" data-tab="email"><span class="tab-icon">✉</span> Email Scanner</button>
+                            <button class="tab-btn" data-tab="qr"><span class="tab-icon">▦</span> QR Scanner</button>
+                            <button class="tab-btn" data-tab="history"><span class="tab-icon">📊</span> History & Stats</button>
+                        </div>
+                        <div class="backend-status-badge" id="backendStatus">
+                            <span class="status-dot"></span>
+                            <span id="backendStatusText">Connecting...</span>
+                        </div>
+                    </div>
+
+                    <div class="scanner-body">
+                        <!-- URL Scanner Form -->
+                        <div class="scanner-tab-content active" id="tabContentUrl">
+                            <div class="input-group">
+                                <label for="urlInput">Enter Target URL to inspect:</label>
+                                <div class="input-row">
+                                    <input type="text" id="urlInput" class="scanner-input" placeholder="e.g. https://paypa1.com/login-verify or https://google.com" />
+                                    <button class="scan-submit-btn" id="submitUrlScan">Scan URL ⚡</button>
+                                </div>
+                            </div>
+                            <div class="quick-samples">
+                                <span>Try sample:</span>
+                                <button class="sample-chip phishing" onclick="setSample('url', 'http://paypa1.com/login-verify')">🚨 Paypa1 Typosquat</button>
+                                <button class="sample-chip suspicious" onclick="setSample('url', 'http://192.168.1.1/update-billing')">⚠️ Raw IP Phish</button>
+                                <button class="sample-chip safe" onclick="setSample('url', 'https://www.google.com')">🛡 Safe: Google.com</button>
+                            </div>
+                        </div>
+
+                        <!-- Email Scanner Form -->
+                        <div class="scanner-tab-content" id="tabContentEmail">
+                            <div class="input-group">
+                                <label for="emailSubject">Email Subject:</label>
+                                <input type="text" id="emailSubject" class="scanner-input" placeholder="e.g. URGENT: Your account has been suspended!" />
+                            </div>
+                            <div class="input-group" style="margin-top: 15px;">
+                                <label for="emailBody">Email Body Content:</label>
+                                <textarea id="emailBody" class="scanner-textarea" rows="4" placeholder="Paste full email text or message here..."></textarea>
+                            </div>
+                            <div class="email-actions">
+                                <div class="quick-samples">
+                                    <span>Try sample:</span>
+                                    <button class="sample-chip phishing" onclick="setSample('email_bad')">🚨 Urgent Suspension</button>
+                                    <button class="sample-chip safe" onclick="setSample('email_good')">🛡 Normal Invite</button>
+                                </div>
+                                <button class="scan-submit-btn" id="submitEmailScan">Scan Email ⚡</button>
+                            </div>
+                        </div>
+
+                        <!-- QR Scanner Form -->
+                        <div class="scanner-tab-content" id="tabContentQr">
+                            <div class="qr-mode-selector">
+                                <button class="qr-mode-btn active" data-qrmode="camera" id="btnQrModeCamera">
+                                    <span>📷</span> Live Camera Scan
+                                </button>
+                                <button class="qr-mode-btn" data-qrmode="file" id="btnQrModeFile">
+                                    <span>📁</span> Upload QR Image
+                                </button>
+                                <button class="qr-mode-btn" data-qrmode="manual" id="btnQrModeManual">
+                                    <span>✏️</span> Enter URL Manually
+                                </button>
+                            </div>
+
+                            <!-- Mode 1: Live Camera Scanner -->
+                            <div class="qr-panel" id="qrCameraPanel">
+                                <div class="qr-camera-wrapper">
+                                    <div id="qrReader" class="qr-video-viewport"></div>
+                                    <div class="qr-camera-placeholder" id="qrCameraPlaceholder">
+                                        <div class="cam-icon">📹</div>
+                                        <h4>Live Camera QR Scanner</h4>
+                                        <p>Click "Start Camera" to scan QR codes with your webcam or phone camera in real-time.</p>
+                                        <button class="primary-button" id="btnStartQrCamera" type="button" style="margin-top: 15px;">
+                                            <span>📷</span> Start Camera
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="qr-camera-controls" id="qrCameraControls" style="display: none;">
+                                    <div class="cam-select-group">
+                                        <label for="qrCameraSelect">Camera Device:</label>
+                                        <select id="qrCameraSelect" class="scanner-input" style="padding: 8px 12px; font-size: 13px; max-width: 250px;"></select>
+                                    </div>
+                                    <button class="stop-camera-btn" id="btnStopQrCamera" type="button">
+                                        <span>⏹</span> Stop Camera
+                                    </button>
+                                </div>
+                                <div class="qr-status-hint" id="qrScanStatus">
+                                    <span>💡</span> Point your camera at a QR code to automatically detect and scan.
+                                </div>
+                            </div>
+
+                            <!-- Mode 2: Upload QR Image File -->
+                            <div class="qr-panel" id="qrFilePanel" style="display: none;">
+                                <div class="qr-dropzone" id="qrDropZone">
+                                    <input type="file" id="qrFileInput" accept="image/*" style="display: none;" />
+                                    <div class="dropzone-content">
+                                        <div class="drop-icon">🖼️</div>
+                                        <h4>Drag & Drop QR Code Image here</h4>
+                                        <p>or click anywhere in this box to select an image file</p>
+                                        <button class="secondary-button" id="btnBrowseQrFile" type="button" style="margin-top: 12px;">
+                                            Select QR Image
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="qrFilePreviewContainer" style="display: none; margin-top: 15px; text-align: center;">
+                                    <img id="qrFilePreview" src="" alt="QR Preview" style="max-height: 180px; border-radius: 8px; border: 1px solid #1e293b;" />
+                                </div>
+                            </div>
+
+                            <!-- Decoded QR URL input and trigger -->
+                            <div class="input-group" style="margin-top: 20px;">
+                                <label for="qrInput">Decoded QR Destination URL / Content:</label>
+                                <div class="input-row">
+                                    <input type="text" id="qrInput" class="scanner-input" placeholder="e.g. https://wallet-connect.xyz/verify-account" />
+                                    <button class="scan-submit-btn" id="submitQrScan" type="button">Scan QR Target ⚡</button>
+                                </div>
+                            </div>
+                            <div class="quick-samples">
+                                <span>Try sample:</span>
+                                <button class="sample-chip phishing" onclick="setSample('qr', 'https://wallet-connect.xyz/verify-account')">🚨 Fake Wallet Connect</button>
+                                <button class="sample-chip safe" onclick="setSample('qr', 'https://en.wikipedia.org/wiki/Cybersecurity')">🛡 Wikipedia Link</button>
+                            </div>
+                        </div>
+
+                        <!-- History & Stats Tab -->
+                        <div class="scanner-tab-content" id="tabContentHistory">
+                            <div class="stats-overview" id="statsOverview">
+                                <div class="stat-card">
+                                    <div class="stat-num" id="statTotalScans">0</div>
+                                    <div class="stat-label">Total Scans</div>
+                                </div>
+                                <div class="stat-card stat-phishing">
+                                    <div class="stat-num" id="statPhishing">0</div>
+                                    <div class="stat-label">Phishing Blocked</div>
+                                </div>
+                                <div class="stat-card stat-suspicious">
+                                    <div class="stat-num" id="statSuspicious">0</div>
+                                    <div class="stat-label">Suspicious Flags</div>
+                                </div>
+                                <div class="stat-card stat-safe">
+                                    <div class="stat-num" id="statSafe">0</div>
+                                    <div class="stat-label">Safe & Clean</div>
+                                </div>
+                            </div>
+
+                            <div class="history-table-container">
+                                <h4>Recent Scans (Database)</h4>
+                                <div class="table-wrap">
+                                    <table class="history-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Type</th>
+                                                <th>Target / Input</th>
+                                                <th>Verdict</th>
+                                                <th>Risk Score</th>
+                                                <th>Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="historyTableBody">
+                                            <tr>
+                                                <td colspan="6" style="text-align:center; color:#64748b; padding:20px;">No scans recorded yet. Run a scan above!</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scan Result Box -->
+                        <div class="result-container" id="resultContainer" style="display: none;">
+                            <div class="result-divider"></div>
+                            <div class="result-header">
+                                <div class="result-title-group">
+                                    <h3>Scan Analysis Result</h3>
+                                    <span class="scan-id-tag" id="resScanId">Scan #0</span>
+                                </div>
+                                <div class="verdict-badge" id="resVerdictBadge">SAFE</div>
+                            </div>
+
+                            <div class="risk-score-wrapper">
+                                <div class="risk-score-header">
+                                    <span>AI Risk Score</span>
+                                    <span class="score-percent" id="resScoreText">0 / 100</span>
+                                </div>
+                                <div class="score-bar-bg">
+                                    <div class="score-bar-fill" id="resScoreBar" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="threat-details">
+                                <h4>Detection Insights & Indicators:</h4>
+                                <ul class="reasons-list" id="resReasonsList">
+                                    <li class="clean-item">✓ No malicious indicators or known threat patterns detected.</li>
+                                </ul>
+                            </div>
+
+                            <!-- Report Action Bar -->
+                            <div class="result-actions-bar">
+                                <button type="button" class="report-open-btn" id="btnOpenReport">
+                                    <span>🚩</span> Report Suspicious Content
+                                </button>
+                            </div>
+
+                            <!-- Report Submission Form (Hidden until clicked) -->
+                            <div class="report-box" id="reportBox" style="display: none;">
+                                <div class="report-box-header">
+                                    <div>
+                                        <h4>🚩 Report Suspicious Threat</h4>
+                                        <p>Help improve PhishGuard AI intelligence by submitting user feedback on this scan.</p>
+                                    </div>
+                                    <button type="button" class="report-close-btn" id="btnCloseReport" title="Close">✕</button>
+                                </div>
+
+                                <div class="report-quick-reasons">
+                                    <span>Quick reason:</span>
+                                    <button type="button" class="sample-chip" onclick="setReportReason('Brand Impersonation / Fake Login')">🎭 Fake Login</button>
+                                    <button type="button" class="sample-chip" onclick="setReportReason('Financial Extortion / Fake Payment')">💳 Financial Scam</button>
+                                    <button type="button" class="sample-chip" onclick="setReportReason('Credential Harvester / Fake Form')">🔑 Credential Theft</button>
+                                    <button type="button" class="sample-chip" onclick="setReportReason('Suspicious / Dangerous Content')">⚠️ Dangerous Content</button>
+                                </div>
+
+                                <div class="form-group" style="margin-top: 14px;">
+                                    <label for="reportReason">Reason for Reporting:</label>
+                                    <textarea id="reportReason" class="scanner-textarea" rows="3" placeholder="Provide details or explain why this message or link looks suspicious..."></textarea>
+                                </div>
+
+                                <div class="report-actions">
+                                    <button type="button" class="scan-submit-btn" id="btnSubmitReport">
+                                        Submit Report 🚀
+                                    </button>
+                                    <button type="button" class="secondary-button" id="btnCancelReport" style="padding: 12px 20px; font-size: 13px;">
+                                        Cancel
+                                    </button>
+                                </div>
+
+                                <div class="report-alert" id="reportAlert" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= HOW IT WORKS ================= -->
+
+        <section class="how-section" id="how-it-works">
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div class="small-label">
+                        SIMPLE. FAST. INTELLIGENT.
+                    </div>
+
+                    <h2>
+                        How <span>PhishGuard AI</span> Works
+                    </h2>
+
+                    <p>
+                        Detect suspicious content in three simple steps.
+                    </p>
+
+                </div>
+
+
+                <div class="steps">
+
+                    <div class="step">
+
+                        <div class="step-number">01</div>
+
+                        <div class="step-content">
+                            <h3>Submit</h3>
+                            <p>
+                                Submit an email, URL, or QR code
+                                that you want to check.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="step-line"></div>
+
+
+                    <div class="step">
+
+                        <div class="step-number">02</div>
+
+                        <div class="step-content">
+                            <h3>Analyze</h3>
+                            <p>
+                                AI analyzes the submitted content
+                                for suspicious indicators.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="step-line"></div>
+
+
+                    <div class="step">
+
+                        <div class="step-number">03</div>
+
+                        <div class="step-content">
+                            <h3>Protect</h3>
+                            <p>
+                                Receive a clear threat classification
+                                and risk assessment.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= FEATURES ================= -->
+
+        <section class="features-section" id="features">
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div class="small-label">
+                        SECURITY FEATURES
+                    </div>
+
+                    <h2>
+                        Intelligent <span>Security Features</span>
+                    </h2>
+
+                    <p>
+                        Built to help identify modern phishing threats
+                        quickly and clearly.
+                    </p>
+
+                </div>
+
+
+                <div class="features-grid">
+
+                    <div class="feature-card">
+                        <div class="feature-icon">◉</div>
+                        <h3>AI-Powered Detection</h3>
+                        <p>
+                            Identify suspicious patterns using
+                            intelligent analysis.
+                        </p>
+                    </div>
+
+
+                    <div class="feature-card">
+                        <div class="feature-icon">◇</div>
+                        <h3>Multi-Channel Protection</h3>
+                        <p>
+                            Protection for emails, URLs and QR codes
+                            in one platform.
+                        </p>
+                    </div>
+
+
+                    <div class="feature-card">
+                        <div class="feature-icon">◈</div>
+                        <h3>Risk Scoring</h3>
+                        <p>
+                            Understand the severity of detected
+                            threats with clear risk information.
+                        </p>
+                    </div>
+
+
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Fast Analysis</h3>
+                        <p>
+                            Get security results quickly and
+                            easily when you need them.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= ABOUT / SECURITY ================= -->
+
+        <section class="about-section" id="about">
+
+            <div class="container about-container">
+
+                <div class="about-content">
+
+                    <div class="small-label">
+                        STAY ONE STEP AHEAD
+                    </div>
+
+                    <h2>
+                        Don't Trust It.
+                        <span>Verify It.</span>
+                    </h2>
+
+                    <p>
+                        Phishing attacks are becoming increasingly
+                        sophisticated. PhishGuard AI is designed to
+                        help users identify suspicious content before
+                        interacting with it.
+                    </p>
+
+                    <div class="security-list">
+
+                        <div>
+                            <span>✓</span>
+                            AI-Powered Analysis
+                        </div>
+
+                        <div>
+                            <span>✓</span>
+                            Multi-Layer Detection
+                        </div>
+
+                        <div>
+                            <span>✓</span>
+                            Privacy-Focused Design
+                        </div>
+
+                        <div>
+                            <span>✓</span>
+                            Real-Time Threat Analysis
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="about-visual">
+
+                    <div class="large-shield">
+                        <div class="large-shield-check">✓</div>
+                    </div>
+
+                    <div class="scan-line"></div>
+
+                    <div class="scan-text">
+                        <span class="pulse-dot"></span>
+                        SECURITY SCAN READY
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= CTA ================= -->
+
+        <section class="cta-section">
+
+            <div class="container">
+
+                <div class="cta-box">
+
+                    <div class="cta-glow"></div>
+
+                    <div class="small-label">
+                        PHISHING DEFENSE STARTS HERE
+                    </div>
+
+                    <h2>
+                        Don't Trust a Suspicious Link.
+                        <span>Verify It.</span>
+                    </h2>
+
+                    <p>
+                        Stay protected from modern phishing attacks
+                        with intelligent threat detection.
+                    </p>
+
+                    <a href="#detection" class="primary-button">
+                        Get Started <span>→</span>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+
+        <div class="container footer-container">
+
+            <div class="footer-brand">
+
+                <a href="#home" class="logo">
+                    <span class="logo-icon">🛡</span>
+                    <span>PhishGuard <strong>AI</strong></span>
+                </a>
+
+                <p>
+                    AI-powered protection against phishing threats.
+                </p>
+
+            </div>
+
+
+            <div class="footer-links">
+
+                <a href="#home">Home</a>
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <a href="#detection">Contact</a>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+            © 2026 PhishGuard AI. All rights reserved.
+        </div>
+
+    <script src="html5-qrcode.min.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
