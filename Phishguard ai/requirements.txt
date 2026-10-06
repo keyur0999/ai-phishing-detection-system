@@ -1,8 +1,0 @@
-# PhishGuard AI - Core Dependencies
-Flask>=3.0.0,<3.1.0
-Flask-Cors>=4.0.0
-scikit-learn>=1.4.0
-joblib>=1.3.0
-numpy>=1.26.0
-python-dotenv>=1.0.0
-requests>=2.31.0
