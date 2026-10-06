@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard AI | Admin Security Operations Center (SOC)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --admin-bg: #030712;
+            --card-surface: rgba(11, 20, 38, 0.82);
+            --card-border: rgba(56, 189, 248, 0.2);
+            --accent-cyan: #38bdf8;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--admin-bg);
+            color: #f1f5f9;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.12) 0px, transparent 45%),
+                radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.1) 0px, transparent 45%),
+                radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.7) 0px, transparent 55%);
+        }
+
+        .admin-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(3, 7, 18, 0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+        }
+
+        .admin-nav-container {
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: min(1320px, 94%);
+            margin: auto;
+        }
+
+        .soc-badge {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(14, 165, 233, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            color: var(--accent-cyan);
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+        }
+
+        .admin-main-wrap {
+            padding-top: 105px;
+            padding-bottom: 70px;
+            width: min(1320px, 94%);
+            margin: auto;
+        }
+
+        /* Top KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .kpi-card {
+            background: var(--card-surface);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+
+        .kpi-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            background: rgba(14, 165, 233, 0.12);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            flex-shrink: 0;
+        }
+
+        .kpi-num {
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+            margin-bottom: 3px;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        /* Admin Navigation Tabs Bar */
+        .admin-tabs-bar {
+            display: flex;
+            background: rgba(6, 12, 24, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 6px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            gap: 6px;
+        }
+
+        .admin-tab-btn {
+            padding: 10px 18px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .admin-tab-btn.active {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.35);
+        }
+
+        /* Panels */
+        .admin-panel {
+            display: none;
+            background: var(--card-surface);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 28px;
+            backdrop-filter: blur(16px);
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .panel-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 22px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .panel-header-row h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .panel-header-row p {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+
+        /* Search & Actions */
+        .admin-filter-input {
+            padding: 8px 14px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 13px;
+            outline: none;
+            width: 240px;
+        }
+
+        .admin-filter-input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        /* Admin Tables */
+        .admin-table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .admin-data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .admin-data-table th {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-data-table td {
+            padding: 13px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+        }
+
+        .admin-data-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Badges */
+        .badge-success {
+            display: inline-block;
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: #4ade80;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+
+        .badge-failed {
+            display: inline-block;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #f87171;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+
+        .badge-pending {
+            display: inline-block;
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+
+        .action-chip-btn {
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .action-chip-resolve {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .action-chip-resolve:hover {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        .action-chip-dismiss {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .action-chip-dismiss:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* Schema Box */
+        .schema-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 18px;
+        }
+
+        .schema-col-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .schema-col-card h5 {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--accent-cyan);
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 6px;
+        }
+
+        .schema-col-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .schema-col-card ul li {
+            padding: 3px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .schema-col-card ul li span.type {
+            color: #64748b;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= ADMIN NAVBAR ================= -->
+    <header class="admin-nav">
+        <div class="admin-nav-container">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <a href="/dashboard" class="logo">
+                    <span class="logo-icon">🛡</span>
+                    <span>PhishGuard <strong>AI</strong></span>
+                </a>
+                <span class="soc-badge">ADMIN SOC</span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <span id="adminUserBadge" style="font-size: 13px; color: #38bdf8; font-weight: 700;">🛡️ Admin SOC</span>
+                <span style="font-size: 12px; color: #4ade80; display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e;"></span>
+                    SQLite DB Online
+                </span>
+                <a href="/dashboard" class="cta-btn-secondary" style="padding: 7px 14px; font-size: 12px;">
+                    User Scanner →
+                </a>
+                <a href="/" class="cta-btn-secondary" style="padding: 7px 14px; font-size: 12px;">
+                    Landing Page
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= MAIN ADMIN CONTENT ================= -->
+    <main class="admin-main-wrap">
+
+        <!-- Top KPI Overview Metrics -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon">👥</div>
+                <div>
+                    <div class="kpi-num" id="kpiUsers">--</div>
+                    <div class="kpi-label">Registered Accounts</div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon">🔑</div>
+                <div>
+                    <div class="kpi-num" id="kpiLogins">--</div>
+                    <div class="kpi-label">Login Sessions Logged</div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon">🛡️</div>
+                <div>
+                    <div class="kpi-num" id="kpiScans">--</div>
+                    <div class="kpi-label">Threat Scans Evaluated</div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="color: #f87171;">🚨</div>
+                <div>
+                    <div class="kpi-num" id="kpiPhishing">--</div>
+                    <div class="kpi-label">Phishing Intercepted</div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="color: #fbbf24;">🚩</div>
+                <div>
+                    <div class="kpi-num" id="kpiReports">--</div>
+                    <div class="kpi-label">User Reports Pending</div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon">🚫</div>
+                <div>
+                    <div class="kpi-num" id="kpiBlocklist">--</div>
+                    <div class="kpi-label">Blocklisted Domains</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Machine Learning Engine Health Banner -->
+        <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 14px 20px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">🤖</span>
+                <div>
+                    <div style="font-size: 14px; font-weight: 700; color: #ffffff;">
+                        Local Machine Learning Engine: <span id="adminAiStatusText" style="color: #4ade80;">Active (scikit-learn local offline inference)</span>
+                    </div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;" id="adminAiDetails">
+                        Email Model: TF-IDF (1,2-grams) + Calibrated Logistic Classifier | URL Model: Character N-Gram & Shannon Entropy Lexical Union
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 12px; color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); padding: 5px 12px; border-radius: 6px; font-weight: 600;">
+                    🔒 Zero External Telemetry (100% Local)
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs Bar -->
+        <div class="admin-tabs-bar">
+            <button class="admin-tab-btn active" data-tab="users" onclick="switchAdminTab('users')">
+                <span>👥</span> User Accounts
+            </button>
+            <button class="admin-tab-btn" data-tab="logins" onclick="switchAdminTab('logins')">
+                <span>📜</span> Login Audit Trail
+            </button>
+            <button class="admin-tab-btn" data-tab="reports" onclick="switchAdminTab('reports')">
+                <span>🚩</span> Threat Reports
+            </button>
+            <button class="admin-tab-btn" data-tab="blocklist" onclick="switchAdminTab('blocklist')">
+                <span>🚫</span> Blocklist Manager
+            </button>
+            <button class="admin-tab-btn" data-tab="schema" onclick="switchAdminTab('schema')">
+                <span>🗄</span> Database Architecture
+            </button>
+        </div>
+
+        <!-- ================= TAB 1: USER ACCOUNTS ================= -->
+        <div class="admin-panel active" id="panelUsers">
+            <div class="panel-header-row">
+                <div>
+                    <h3>Registered User Accounts</h3>
+                    <p>All authenticated accounts saved in SQLite <code>users</code> table</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="filterUsersInput" class="admin-filter-input" placeholder="Search by username or email..." onkeyup="filterUsersTable()" />
+                    <button class="secondary-button" onclick="loadAdminUsers()" style="padding: 8px 14px; font-size: 12px;">🔄 Refresh</button>
+                </div>
+            </div>
+
+            <div class="admin-table-wrap">
+                <table class="admin-data-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Username</th>
+                            <th>Email Address</th>
+                            <th>Role Access</th>
+                            <th>Registration Date</th>
+                            <th>Last Active Login</th>
+                            <th>Login Count</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Loading user records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: LOGIN AUDIT TRAIL ================= -->
+        <div class="admin-panel" id="panelLogins">
+            <div class="panel-header-row">
+                <div>
+                    <h3>User Login Session Audit Trail</h3>
+                    <p>Persistently recorded authentication events in SQLite <code>user_logins</code> table</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="filterLoginsInput" class="admin-filter-input" placeholder="Filter by username or IP..." onkeyup="filterLoginsTable()" />
+                    <button class="secondary-button" onclick="loadAdminLogins()" style="padding: 8px 14px; font-size: 12px;">🔄 Refresh</button>
+                </div>
+            </div>
+
+            <div class="admin-table-wrap">
+                <table class="admin-data-table" id="loginsTable">
+                    <thead>
+                        <tr>
+                            <th>Log ID</th>
+                            <th>Username</th>
+                            <th>IP Address</th>
+                            <th>Browser / User Agent</th>
+                            <th>Status</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loginsTableBody">
+                        <tr><td colspan="6" style="text-align:center; padding:20px; color:#64748b;">Loading login audit logs...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: THREAT REPORTS ================= -->
+        <div class="admin-panel" id="panelReports">
+            <div class="panel-header-row">
+                <div>
+                    <h3>User Threat Reports & Moderation</h3>
+                    <p>Community reported scans awaiting admin triage in <code>reports</code> table</p>
+                </div>
+                <button class="secondary-button" onclick="loadAdminReports()" style="padding: 8px 14px; font-size: 12px;">🔄 Refresh</button>
+            </div>
+
+            <div class="admin-table-wrap">
+                <table class="admin-data-table">
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Reporter</th>
+                            <th>Scan Type</th>
+                            <th>Flagged Input / Target</th>
+                            <th>Risk</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTableBody">
+                        <tr><td colspan="8" style="text-align:center; padding:20px; color:#64748b;">Loading threat reports...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= TAB 4: BLOCKLIST MANAGER ================= -->
+        <div class="admin-panel" id="panelBlocklist">
+            <div class="panel-header-row">
+                <div>
+                    <h3>Threat Blocklist Management</h3>
+                    <p>Preemptively flag and block known phishing domains in <code>blocklist</code> table</p>
+                </div>
+            </div>
+
+            <!-- Add new domain blocklist form -->
+            <form id="addBlocklistForm" style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+                <input type="text" id="newBlockDomain" class="admin-filter-input" placeholder="e.g. evil-paypal-login.xyz" required style="flex: 1; min-width: 220px;" />
+                <input type="text" id="newBlockReason" class="admin-filter-input" placeholder="Reason (e.g. Typosquat / Credential theft)" style="flex: 1.5; min-width: 260px;" />
+                <button type="submit" class="cta-btn-primary" style="padding: 8px 20px; font-size: 13px;">
+                    + Add to Blocklist
+                </button>
+            </form>
+
+            <div class="admin-table-wrap">
+                <table class="admin-data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Blocked Domain</th>
+                            <th>Threat Reason</th>
+                            <th>Added Timestamp</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="blocklistTableBody">
+                        <tr><td colspan="5" style="text-align:center; padding:20px; color:#64748b;">Loading blocklist...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= TAB 5: DATABASE ARCHITECTURE ================= -->
+        <div class="admin-panel" id="panelSchema">
+            <div class="panel-header-row">
+                <div>
+                    <h3>Relational SQL Database Architecture (SQLite)</h3>
+                    <p>Active tables, foreign key constraints, and storage layout in <code>phishguard.db</code></p>
+                </div>
+                <span style="font-family: var(--font-mono); font-size: 12px; color: #4ade80; background: rgba(34,197,94,0.1); padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(34,197,94,0.3);">
+                    SQLite 3.x • WAL Mode
+                </span>
+            </div>
+
+            <div class="schema-grid">
+                <div class="schema-col-card">
+                    <h5>users <span style="font-size: 10px; color: #64748b;">TABLE</span></h5>
+                    <ul>
+                        <li><span>id</span> <span class="type">INT PK AUTO</span></li>
+                        <li><span>username</span> <span class="type">TEXT UNIQUE</span></li>
+                        <li><span>email</span> <span class="type">TEXT UNIQUE</span></li>
+                        <li><span>password_hash</span> <span class="type">TEXT (PBKDF2)</span></li>
+                        <li><span>last_login_at</span> <span class="type">TIMESTAMP</span></li>
+                        <li><span>login_count</span> <span class="type">INTEGER</span></li>
+                        <li><span>created_at</span> <span class="type">TIMESTAMP</span></li>
+                    </ul>
+                </div>
+
+                <div class="schema-col-card" style="border-color: rgba(56, 189, 248, 0.4);">
+                    <h5 style="color: #38bdf8;">user_logins <span style="font-size: 10px; color: #4ade80;">AUDIT</span></h5>
+                    <ul>
+                        <li><span>id</span> <span class="type">INT PK AUTO</span></li>
+                        <li><span>user_id</span> <span class="type">INT FK (users)</span></li>
+                        <li><span>username</span> <span class="type">TEXT</span></li>
+                        <li><span>ip_address</span> <span class="type">TEXT</span></li>
+                        <li><span>user_agent</span> <span class="type">TEXT</span></li>
+                        <li><span>login_time</span> <span class="type">TIMESTAMP</span></li>
+                        <li><span>status</span> <span class="type">TEXT (success/failed)</span></li>
+                    </ul>
+                </div>
+
+                <div class="schema-col-card">
+                    <h5>scans <span style="font-size: 10px; color: #64748b;">TABLE</span></h5>
+                    <ul>
+                        <li><span>id</span> <span class="type">INT PK AUTO</span></li>
+                        <li><span>user_id</span> <span class="type">INT FK</span></li>
+                        <li><span>scan_type</span> <span class="type">TEXT (url/email/qr)</span></li>
+                        <li><span>input_data</span> <span class="type">TEXT</span></li>
+                        <li><span>verdict</span> <span class="type">TEXT (safe/phish)</span></li>
+                        <li><span>risk_score</span> <span class="type">INT (0-100)</span></li>
+                        <li><span>reasons</span> <span class="type">JSON TEXT</span></li>
+                        <li><span>created_at</span> <span class="type">TIMESTAMP</span></li>
+                    </ul>
+                </div>
+
+                <div class="schema-col-card">
+                    <h5>reports <span style="font-size: 10px; color: #64748b;">TABLE</span></h5>
+                    <ul>
+                        <li><span>id</span> <span class="type">INT PK AUTO</span></li>
+                        <li><span>scan_id</span> <span class="type">INT FK</span></li>
+                        <li><span>user_id</span> <span class="type">INT FK</span></li>
+                        <li><span>reason</span> <span class="type">TEXT</span></li>
+                        <li><span>status</span> <span class="type">TEXT (pending/resolved)</span></li>
+                        <li><span>created_at</span> <span class="type">TIMESTAMP</span></li>
+                    </ul>
+                </div>
+
+                <div class="schema-col-card">
+                    <h5>blocklist <span style="font-size: 10px; color: #64748b;">TABLE</span></h5>
+                    <ul>
+                        <li><span>id</span> <span class="type">INT PK AUTO</span></li>
+                        <li><span>domain</span> <span class="type">TEXT UNIQUE</span></li>
+                        <li><span>reason</span> <span class="type">TEXT</span></li>
+                        <li><span>added_at</span> <span class="type">TIMESTAMP</span></li>
+                    </ul>
+                </div>
+
+                <div class="schema-col-card">
+                    <h5>threat_indicators <span style="font-size: 10px; color: #64748b;">TABLE</span></h5>
+                    <ul>
+                        <li><span>id</span> <span class="type">INT PK AUTO</span></li>
+                        <li><span>indicator</span> <span class="type">TEXT UNIQUE</span></li>
+                        <li><span>category</span> <span class="type">TEXT (url/email)</span></li>
+                        <li><span>weight</span> <span class="type">INTEGER</span></li>
+                        <li><span>added_at</span> <span class="type">TIMESTAMP</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        const API_URL = (window.location.protocol.startsWith("http") && (window.location.port === "5000" || window.location.port === "5001"))
+            ? ""
+            : "http://127.0.0.1:5000";
+
+        let allUsersData = [];
+        let allLoginsData = [];
+
+        function switchAdminTab(tabKey) {
+            document.querySelectorAll(".admin-tab-btn").forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.tab === tabKey);
+            });
+            document.querySelectorAll(".admin-panel").forEach(p => {
+                p.classList.remove("active");
+            });
+
+            const targetPanel = document.getElementById(`panel${tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}`);
+            if (targetPanel) targetPanel.classList.add("active");
+
+            if (tabKey === "users") loadAdminUsers();
+            if (tabKey === "logins") loadAdminLogins();
+            if (tabKey === "reports") loadAdminReports();
+            if (tabKey === "blocklist") loadAdminBlocklist();
+        }
+
+        // --- Load Overview KPIs ---
+        async function loadAdminOverview() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/overview`, { credentials: "include" });
+                const data = await res.json();
+                if (data.success && data.overview) {
+                    const o = data.overview;
+                    document.getElementById("kpiUsers").textContent = o.users_count || 0;
+                    document.getElementById("kpiLogins").textContent = o.logins_count || 0;
+                    document.getElementById("kpiScans").textContent = o.scans_count || 0;
+                    document.getElementById("kpiPhishing").textContent = o.phish_scans || 0;
+                    document.getElementById("kpiReports").textContent = o.pending_reports || 0;
+                    document.getElementById("kpiBlocklist").textContent = o.blocklist_count || 0;
+
+                    if (o.ai_engine) {
+                        const ai = o.ai_engine;
+                        const statusEl = document.getElementById("adminAiStatusText");
+                        const detailsEl = document.getElementById("adminAiDetails");
+                        if (statusEl) {
+                            statusEl.textContent = ai.models_loaded ? "Operational (scikit-learn local models ready)" : "Fallback Mode (Rule-based heuristics)";
+                            statusEl.style.color = ai.models_loaded ? "#4ade80" : "#fbbf24";
+                        }
+                        if (detailsEl && ai.metadata && ai.metadata.email_model) {
+                            detailsEl.textContent = `Email: ${ai.metadata.email_model.algorithm} | URL: ${ai.metadata.url_model.algorithm}`;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn("Could not load admin overview:", err);
+            }
+        }
+
+        // --- Load Users Table ---
+        async function loadAdminUsers() {
+            const tbody = document.getElementById("usersTableBody");
+            try {
+                const res = await fetch(`${API_URL}/api/admin/users?limit=150`, { credentials: "include" });
+                const data = await res.json();
+                if (data.success && Array.isArray(data.users)) {
+                    allUsersData = data.users;
+                    renderUsersTable(allUsersData);
+                }
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#f87171;">Failed to load users.</td></tr>`;
+            }
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById("usersTableBody");
+            if (!users || users.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">No registered user accounts found.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = users.map(u => {
+                const roleBadge = u.role === 'admin'
+                    ? `<span style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">🛡️ ADMIN</span>`
+                    : `<span style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); padding: 3px 8px; border-radius: 6px; font-weight: 600; font-size: 11px;">NORMAL USER</span>`;
+                return `
+                    <tr>
+                        <td><strong>#${u.id}</strong></td>
+                        <td style="color:#38bdf8; font-weight:700;">${u.username}</td>
+                        <td>${u.email || '<span style="color:#64748b;">Not provided</span>'}</td>
+                        <td>${roleBadge}</td>
+                        <td style="color:#94a3b8; font-size:12px;">${u.created_at || 'Recent'}</td>
+                        <td style="color:#94a3b8; font-size:12px;">${u.last_login_at || '<span style="color:#64748b;">First session</span>'}</td>
+                        <td><span class="badge-success">${u.login_count || 1} logins</span></td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function filterUsersTable() {
+            const q = document.getElementById("filterUsersInput").value.toLowerCase().trim();
+            const filtered = allUsersData.filter(u => 
+                u.username.toLowerCase().includes(q) || (u.email && u.email.toLowerCase().includes(q))
+            );
+            renderUsersTable(filtered);
+        }
+
+        // --- Load Logins Audit Trail ---
+        async function loadAdminLogins() {
+            const tbody = document.getElementById("loginsTableBody");
+            try {
+                const res = await fetch(`${API_URL}/api/admin/logins?limit=150`, { credentials: "include" });
+                const data = await res.json();
+                if (data.success && Array.isArray(data.logins)) {
+                    allLoginsData = data.logins;
+                    renderLoginsTable(allLoginsData);
+                }
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#f87171;">Failed to load login audits.</td></tr>`;
+            }
+        }
+
+        function renderLoginsTable(logins) {
+            const tbody = document.getElementById("loginsTableBody");
+            if (!logins || logins.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#64748b;">No login audit events recorded.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = logins.map(l => {
+                const isSuccess = (l.status || "").toLowerCase() === "success";
+                const badge = isSuccess ? `<span class="badge-success">SUCCESS ✓</span>` : `<span class="badge-failed">FAILED ✕</span>`;
+                const cleanUa = (l.user_agent || "Browser").length > 40 ? l.user_agent.substring(0, 40) + "..." : l.user_agent;
+                return `
+                    <tr>
+                        <td><strong>#${l.id}</strong></td>
+                        <td style="color:#38bdf8; font-weight:700;">${l.username}</td>
+                        <td><code>${l.ip_address || '127.0.0.1'}</code></td>
+                        <td title="${l.user_agent || ''}">${cleanUa || 'Browser'}</td>
+                        <td>${badge}</td>
+                        <td style="color:#94a3b8; font-size:12px;">${l.login_time || 'Recent'}</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function filterLoginsTable() {
+            const q = document.getElementById("filterLoginsInput").value.toLowerCase().trim();
+            const filtered = allLoginsData.filter(l => 
+                l.username.toLowerCase().includes(q) || (l.ip_address && l.ip_address.includes(q))
+            );
+            renderLoginsTable(filtered);
+        }
+
+        // --- Load Threat Reports ---
+        async function loadAdminReports() {
+            const tbody = document.getElementById("reportsTableBody");
+            try {
+                const res = await fetch(`${API_URL}/api/reports`, { credentials: "include" });
+                const data = await res.json();
+                if (data.success && Array.isArray(data.reports)) {
+                    if (data.reports.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:#64748b;">No threat reports filed yet.</td></tr>`;
+                        return;
+                    }
+                    tbody.innerHTML = data.reports.map(r => {
+                        const statusClass = r.status === 'resolved' ? 'badge-success' : (r.status === 'dismissed' ? 'badge-failed' : 'badge-pending');
+                        const cleanTarget = (r.input_data || "N/A").length > 30 ? r.input_data.substring(0, 30) + "..." : (r.input_data || "N/A");
+                        return `
+                            <tr>
+                                <td><strong>#${r.id}</strong></td>
+                                <td>${r.username || '<span style="color:#64748b;">Guest</span>'}</td>
+                                <td><span style="text-transform:uppercase; font-size:11px; font-weight:700;">${r.scan_type || 'Scan'}</span></td>
+                                <td title="${r.input_data || ''}">${cleanTarget}</td>
+                                <td><strong>${r.risk_score || 0}%</strong></td>
+                                <td>${r.reason}</td>
+                                <td><span class="${statusClass}">${(r.status || 'pending').toUpperCase()}</span></td>
+                                <td style="white-space:nowrap;">
+                                    <button class="action-chip-btn action-chip-resolve" onclick="updateReportStatus(${r.id}, 'resolved')">Resolve</button>
+                                    <button class="action-chip-btn action-chip-dismiss" onclick="updateReportStatus(${r.id}, 'dismissed')">Dismiss</button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join("");
+                }
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#f87171;">Failed to load reports.</td></tr>`;
+            }
+        }
+
+        async function updateReportStatus(reportId, newStatus) {
+            try {
+                const res = await fetch(`${API_URL}/api/reports/${reportId}/status`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ status: newStatus })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadAdminReports();
+                    loadAdminOverview();
+                } else {
+                    alert(data.message || "Failed to update status.");
+                }
+            } catch (e) {
+                alert("Error connecting to server.");
+            }
+        }
+
+        // --- Load Blocklist ---
+        async function loadAdminBlocklist() {
+            const tbody = document.getElementById("blocklistTableBody");
+            try {
+                const res = await fetch(`${API_URL}/api/admin/blocklist`, { credentials: "include" });
+                const data = await res.json();
+                if (data.success && Array.isArray(data.blocklist)) {
+                    if (data.blocklist.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#64748b;">No domains on blocklist.</td></tr>`;
+                        return;
+                    }
+                    tbody.innerHTML = data.blocklist.map(b => `
+                        <tr>
+                            <td><strong>#${b.id}</strong></td>
+                            <td style="color:#f87171; font-weight:700;"><code>${b.domain}</code></td>
+                            <td>${b.reason || 'Malicious phishing indicator'}</td>
+                            <td style="color:#94a3b8; font-size:12px;">${b.added_at || 'Recent'}</td>
+                            <td>
+                                <button class="action-chip-btn action-chip-dismiss" onclick="deleteBlocklistDomain(${b.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `).join("");
+                }
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#f87171;">Failed to load blocklist.</td></tr>`;
+            }
+        }
+
+        // Add domain to blocklist
+        document.getElementById("addBlocklistForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const domain = document.getElementById("newBlockDomain").value.trim();
+            const reason = document.getElementById("newBlockReason").value.trim();
+            if (!domain) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/blocklist`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ domain, reason })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById("newBlockDomain").value = "";
+                    document.getElementById("newBlockReason").value = "";
+                    loadAdminBlocklist();
+                    loadAdminOverview();
+                } else {
+                    alert(data.message || "Failed to add domain.");
+                }
+            } catch (e) {
+                alert("Error connecting to server.");
+            }
+        });
+
+        async function deleteBlocklistDomain(entryId) {
+            if (!confirm("Are you sure you want to remove this domain from the blocklist?")) return;
+            try {
+                const res = await fetch(`${API_URL}/api/admin/blocklist/${entryId}`, { 
+                    method: "DELETE",
+                    credentials: "include"
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadAdminBlocklist();
+                    loadAdminOverview();
+                }
+            } catch (e) {
+                alert("Could not remove domain.");
+            }
+        }
+
+        // Initialize Admin Console with Role Authorization Guard
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const authRes = await fetch(`${API_URL}/api/auth/me`, { credentials: "include" });
+                const authData = await authRes.json();
+                if (!authData.authenticated || !authData.user || authData.user.role !== 'admin') {
+                    window.location.href = "/login?next=/admin&unauthorized=1";
+                    return;
+                }
+                const badge = document.getElementById("adminUserBadge");
+                if (badge) badge.textContent = `🛡️ Admin: ${authData.user.username}`;
+            } catch (e) {
+                window.location.href = "/login?next=/admin&unauthorized=1";
+                return;
+            }
+            loadAdminOverview();
+            loadAdminUsers();
+        });
+    </script>
+</body>
+</html>

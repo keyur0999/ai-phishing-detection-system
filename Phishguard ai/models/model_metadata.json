@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "created_at": "2026-10-06T23:02:01.405093",
+  "framework": "scikit-learn",
+  "email_model": {
+    "name": "PhishGuard-NLP-TfidfLogReg",
+    "accuracy": 1.0,
+    "algorithm": "TF-IDF (1,2-grams) + LogisticRegression(C=2.5)",
+    "classes": [
+      "safe",
+      "phishing"
+    ]
+  },
+  "url_model": {
+    "name": "PhishGuard-URL-CharLexicalLogReg",
+    "accuracy": 1.0,
+    "algorithm": "Char-ngram TF-IDF + Shannon Entropy/Lexical Union + LogisticRegression",
+    "classes": [
+      "safe",
+      "phishing"
+    ]
+  },
+  "offline_inference": true,
+  "privacy": "100% on-device local execution; zero outbound telemetry."
+}

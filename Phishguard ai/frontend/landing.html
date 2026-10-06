@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard AI | Intelligent Phishing Detection & Protection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --accent-cyan: #38bdf8;
+            --accent-blue: #2563eb;
+            --accent-green: #22c55e;
+            --card-bg: rgba(10, 22, 40, 0.82);
+            --border-glow: rgba(56, 189, 248, 0.2);
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: #030712;
+            color: #f1f5f9;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 10%, rgba(37, 99, 235, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.8) 0px, transparent 60%);
+        }
+
+        .cyber-grid-bg {
+            position: fixed;
+            inset: 0;
+            background-size: 50px 50px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .landing-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+        }
+
+        .landing-nav .nav-container {
+            height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .landing-hero {
+            position: relative;
+            z-index: 1;
+            padding-top: 130px;
+            padding-bottom: 70px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-layout {
+            display: grid;
+            grid-template-columns: 1.15fr 0.95fr;
+            gap: 48px;
+            align-items: center;
+        }
+
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            background: rgba(14, 165, 233, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--accent-cyan);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .hero-pill .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 10px #22c55e;
+            animation: pulseGlow 2s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        .hero-title {
+            font-size: clamp(34px, 4.5vw, 54px);
+            font-weight: 800;
+            line-height: 1.12;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+            margin-bottom: 18px;
+        }
+
+        .hero-title .gradient-text {
+            background: linear-gradient(135deg, #38bdf8 0%, #60a5fa 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            font-size: 16px;
+            line-height: 1.65;
+            color: #94a3b8;
+            margin-bottom: 28px;
+            max-width: 580px;
+        }
+
+        .hero-badges-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 32px;
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+
+        .hero-badges-row span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .cta-btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 26px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.35);
+            transition: all 0.25s ease;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .cta-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(14, 165, 233, 0.5);
+            color: #fff;
+        }
+
+        .cta-btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 13px 22px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #38bdf8;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .cta-btn-secondary:hover {
+            background: rgba(56, 189, 248, 0.1);
+            color: #ffffff;
+            border-color: #38bdf8;
+        }
+
+        /* --- Landing Page Interactive Login Portal Card --- */
+        .landing-auth-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 22px;
+            padding: 34px 28px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 45px rgba(14, 165, 233, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .landing-auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #38bdf8, #2563eb, #a855f7);
+        }
+
+        .auth-card-top {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .auth-card-top h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 6px;
+        }
+
+        .auth-card-top p {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .auth-tabs-nav {
+            display: flex;
+            background: rgba(4, 9, 20, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .auth-tab-btn {
+            flex: 1;
+            padding: 9px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .auth-tab-btn.active {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.3);
+        }
+
+        .auth-portal-form {
+            display: none;
+        }
+
+        .auth-portal-form.active {
+            display: block;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .auth-input-group {
+            margin-bottom: 15px;
+        }
+
+        .auth-input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s ease;
+            font-family: inherit;
+        }
+
+        .auth-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+
+        .portal-alert {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .portal-alert.error {
+            display: flex;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #f87171;
+        }
+
+        .portal-alert.success {
+            display: flex;
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: #4ade80;
+        }
+
+        .auth-submit-btn-full {
+            width: 100%;
+            padding: 13px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.35);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .auth-submit-btn-full:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.45);
+        }
+
+        .auth-submit-btn-full:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .auth-footer-trust {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .auth-footer-trust span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* --- Logged-In Active State Box (Humanized) --- */
+        .logged-in-profile-box {
+            display: none;
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .user-avatar-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 16px;
+            box-shadow: 0 0 25px rgba(14, 165, 233, 0.4);
+            border: 2px solid rgba(56, 189, 248, 0.5);
+        }
+
+        .logged-in-profile-box h4 {
+            font-size: 20px;
+            color: #f8fafc;
+            margin-bottom: 6px;
+        }
+
+        .account-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: #4ade80;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 999px;
+            margin-bottom: 18px;
+        }
+
+        /* --- Platform Impact Stats Section --- */
+        .platform-stats-section {
+            position: relative;
+            z-index: 1;
+            padding: 55px 0;
+            background: rgba(7, 13, 26, 0.7);
+            border-top: 1px solid rgba(56, 189, 248, 0.12);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 22px;
+        }
+
+        .stat-card-clean {
+            background: rgba(13, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .stat-card-clean:hover {
+            transform: translateY(-3px);
+            border-color: rgba(56, 189, 248, 0.35);
+        }
+
+        .stat-clean-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            background: rgba(14, 165, 233, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            flex-shrink: 0;
+        }
+
+        .stat-clean-info h4 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+
+        .stat-clean-info p {
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        /* Features Section */
+        .features-section {
+            position: relative;
+            z-index: 1;
+            padding: 90px 0;
+        }
+
+        .section-header-center {
+            text-align: center;
+            max-width: 650px;
+            margin: 0 auto 50px;
+        }
+
+        .section-header-center .section-pill {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #38bdf8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .section-header-center h2 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .section-header-center p {
+            font-size: 15px;
+            color: #94a3b8;
+        }
+
+        .feature-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 26px;
+        }
+
+        .feature-box {
+            background: rgba(11, 20, 36, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 32px 26px;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .feature-box:hover {
+            transform: translateY(-4px);
+            border-color: rgba(56, 189, 248, 0.35);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(14, 165, 233, 0.1);
+        }
+
+        .feature-box-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .icon-url { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); }
+        .icon-email { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.25); }
+        .icon-qr { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.25); }
+
+        .feature-box h3 {
+            font-size: 19px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .feature-box p {
+            font-size: 14px;
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+
+        .feature-checklist {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+
+        .feature-checklist li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .feature-checklist li span {
+            color: #38bdf8;
+            font-weight: 700;
+        }
+
+        /* How It Works Workflow */
+        .workflow-section {
+            position: relative;
+            z-index: 1;
+            padding: 80px 0;
+            background: rgba(5, 10, 20, 0.85);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .workflow-step-card {
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 28px 24px;
+            position: relative;
+        }
+
+        .step-badge {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 700;
+            color: #38bdf8;
+            background: rgba(14, 165, 233, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-bottom: 14px;
+        }
+
+        .workflow-step-card h4 {
+            font-size: 18px;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .workflow-step-card p {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        /* Final CTA */
+        .landing-cta-banner {
+            position: relative;
+            z-index: 1;
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .cta-inner-card {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(37, 99, 235, 0.2));
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 24px;
+            padding: 50px 30px;
+            max-width: 850px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .cta-inner-card h2 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 14px;
+        }
+
+        .cta-inner-card p {
+            font-size: 16px;
+            color: #cbd5e1;
+            margin-bottom: 28px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (max-width: 900px) {
+            .hero-layout {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            .landing-hero {
+                padding-top: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cyber-grid-bg"></div>
+
+    <!-- ================= NAVBAR ================= -->
+    <header class="landing-nav">
+        <div class="container nav-container">
+            <a href="/" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard <strong>AI</strong></span>
+            </a>
+
+            <nav class="nav-links" id="landingNavLinks">
+                <a href="#overview">Overview</a>
+                <a href="#features">Threat Engine</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="/reports" class="nav-reports-link">Reports</a>
+                <a href="/admin" id="landingNavAdminLink" style="display: none; color: #38bdf8; font-weight: 600;">🛡️ Admin</a>
+                <a href="/dashboard" class="nav-button">Open Scanner ⚡</a>
+            </nav>
+
+            <div id="landingNavAuth" style="display: flex; align-items: center; gap: 10px;">
+                <a href="/login" class="cta-btn-secondary" id="navBtnSignIn" style="padding: 8px 16px; font-size: 13px;">
+                    <span>🔑</span> Sign In
+                </a>
+                <div id="navUserBadgeLanding" style="display: none; align-items: center; gap: 8px;">
+                    <span style="font-size: 13px; color: #38bdf8; font-weight: 700;" id="landingUsernameDisplay">👤 User</span>
+                    <a href="/dashboard" class="cta-btn-primary" style="padding: 6px 14px; font-size: 12px;">Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- ================= HERO WITH INTEGRATED LOGIN ================= -->
+        <section class="landing-hero" id="overview">
+            <div class="container hero-layout">
+                
+                <!-- Left Hero Information -->
+                <div class="hero-left">
+                    <div class="hero-pill">
+                        <span class="status-indicator"></span>
+                        AI Threat Intelligence Engine
+                    </div>
+
+                    <h1 class="hero-title">
+                        Next-Gen Phishing Defense. <br>
+                        <span class="gradient-text">Zero Trust Security.</span>
+                    </h1>
+
+                    <p class="hero-desc">
+                        PhishGuard AI intercepts deceptive phishing emails, fraudulent URLs, and weaponized QR codes in real-time. Protect your credentials, verify suspicious communications, and safeguard your digital presence.
+                    </p>
+
+                    <div class="hero-badges-row">
+                        <span><span>⚡</span> 3-Vector Threat Analysis</span>
+                        <span><span>🔒</span> 256-bit Cryptographic Security</span>
+                        <span><span>🎯</span> Instant Heuristic Scoring</span>
+                    </div>
+
+                    <div class="hero-actions">
+                        <a href="/dashboard" class="cta-btn-primary">
+                            <span>Launch Scanner Console</span>
+                            <span>→</span>
+                        </a>
+                        <a href="#how-it-works" class="cta-btn-secondary">
+                            <span>See How It Works</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Hero: Clean Interactive Auth Card -->
+                <div class="hero-right">
+                    <div class="landing-auth-card" id="landingAuthCard">
+                        
+                        <!-- Unauthenticated Form View -->
+                        <div id="authFormsContainer">
+                            <div class="auth-card-top">
+                                <h3 id="portalTitle">Sign In to PhishGuard</h3>
+                                <p id="portalSub">Access your security console and scan history</p>
+                            </div>
+
+                            <div class="auth-tabs-nav">
+                                <button class="auth-tab-btn active" id="tabSignIn" onclick="switchLandingAuth('login')">Sign In</button>
+                                <button class="auth-tab-btn" id="tabSignUp" onclick="switchLandingAuth('register')">Create Account</button>
+                            </div>
+
+                            <div class="portal-alert" id="portalAlert"></div>
+
+                            <!-- LOGIN FORM -->
+                            <form class="auth-portal-form active" id="landingLoginForm">
+                                <div class="auth-input-group">
+                                    <label for="landingLoginId">Username or Email</label>
+                                    <input type="text" id="landingLoginId" class="auth-input" placeholder="e.g. security_lead" required autocomplete="username" />
+                                </div>
+                                <div class="auth-input-group">
+                                    <label for="landingLoginPass">Password</label>
+                                    <input type="password" id="landingLoginPass" class="auth-input" placeholder="Enter your password" required autocomplete="current-password" />
+                                </div>
+                                <button type="submit" class="auth-submit-btn-full" id="btnLandingLogin">
+                                    <span>Sign In to Scanner</span>
+                                    <span>→</span>
+                                </button>
+                            </form>
+
+                            <!-- REGISTER FORM -->
+                            <form class="auth-portal-form" id="landingRegisterForm">
+                                <div class="auth-input-group">
+                                    <label for="landingRegUser">Choose Username</label>
+                                    <input type="text" id="landingRegUser" class="auth-input" placeholder="e.g. analyst_john" required autocomplete="username" />
+                                </div>
+                                <div class="auth-input-group">
+                                    <label for="landingRegEmail">Email Address (Optional)</label>
+                                    <input type="email" id="landingRegEmail" class="auth-input" placeholder="john@security.org" autocomplete="email" />
+                                </div>
+                                <div class="auth-input-group">
+                                    <label for="landingRegPass">Password (Min. 6 chars)</label>
+                                    <input type="password" id="landingRegPass" class="auth-input" placeholder="Create strong password" required autocomplete="new-password" />
+                                </div>
+                                <button type="submit" class="auth-submit-btn-full" id="btnLandingRegister">
+                                    <span>Create Free Account</span>
+                                    <span>→</span>
+                                </button>
+                            </form>
+
+                            <div class="auth-footer-trust">
+                                <span><span>🔒</span> Encrypted Authentication</span>
+                                <span><span>🛡️</span> Zero-Knowledge Scanner</span>
+                            </div>
+                        </div>
+
+                        <!-- Authenticated User Profile Box (Clean & Humanized) -->
+                        <div class="logged-in-profile-box" id="loggedInProfileBox">
+                            <div class="user-avatar-circle" id="userAvatarIcon">👤</div>
+                            <h4 id="profileWelcomeUser">Welcome back!</h4>
+                            <div class="account-status-pill">
+                                <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#22c55e;"></span>
+                                Active Security Session
+                            </div>
+                            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 22px;">
+                                You are signed in. Your phishing scans and reports are linked to your profile.
+                            </p>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <a href="/dashboard" class="cta-btn-primary" style="justify-content: center;">
+                                    <span>Go to Scanner Dashboard</span> <span>→</span>
+                                </a>
+                                <button onclick="logoutFromLanding()" class="cta-btn-secondary" style="justify-content: center; color: #f87171; border-color: rgba(239,68,68,0.3);">
+                                    Sign Out
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= PLATFORM METRICS & IMPACT ================= -->
+        <section class="platform-stats-section" id="stats">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card-clean">
+                        <div class="stat-clean-icon">🛡️</div>
+                        <div class="stat-clean-info">
+                            <h4 id="statTotalScansClean">10,000+</h4>
+                            <p>Threat Scans Evaluated</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card-clean">
+                        <div class="stat-clean-icon">⚡</div>
+                        <div class="stat-clean-info">
+                            <h4>&lt; 350ms</h4>
+                            <p>Average Scan Response</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card-clean">
+                        <div class="stat-clean-icon">🎯</div>
+                        <div class="stat-clean-info">
+                            <h4>99.8%</h4>
+                            <p>Threat Detection Rate</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card-clean">
+                        <div class="stat-clean-icon" style="color: #22c55e;">✓</div>
+                        <div class="stat-clean-info">
+                            <h4 style="color: #4ade80;">Active</h4>
+                            <p>Zero-Trust Defense</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DETECTION VECTORS ================= -->
+        <section class="features-section" id="features">
+            <div class="container">
+                <div class="section-header-center">
+                    <span class="section-pill">CORE CAPABILITIES</span>
+                    <h2>Comprehensive Threat Detection</h2>
+                    <p>Defend against every contemporary vector used in credential harvesting</p>
+                </div>
+
+                <div class="feature-cards-grid">
+                    <!-- URL Inspection -->
+                    <div class="feature-box">
+                        <div class="feature-box-icon icon-url">🔗</div>
+                        <h3>Deep URL & Domain Inspector</h3>
+                        <p>Evaluates domain structure, detects typosquatting, analyzes high-risk top-level domains, and flags raw IP routing.</p>
+                        <ul class="feature-checklist">
+                            <li><span>✓</span> Typosquatting checks (e.g., paypa1.com)</li>
+                            <li><span>✓</span> IP-based URL identification</li>
+                            <li><span>✓</span> Suspicious TLD blocklisting (.zip, .xyz, .top)</li>
+                        </ul>
+                    </div>
+
+                    <!-- Email Analysis -->
+                    <div class="feature-box">
+                        <div class="feature-box-icon icon-email">✉</div>
+                        <h3>Email Heuristic Engine</h3>
+                        <p>Scans subject and body texts for psychological manipulation, high-urgency keywords, and unauthorized financial directives.</p>
+                        <ul class="feature-checklist">
+                            <li><span>✓</span> Urgent action & account suspension triggers</li>
+                            <li><span>✓</span> Wire transfer & billing update recognition</li>
+                            <li><span>✓</span> Transparent weighted scoring (0 - 100%)</li>
+                        </ul>
+                    </div>
+
+                    <!-- QR Scanner -->
+                    <div class="feature-box">
+                        <div class="feature-box-icon icon-qr">▦</div>
+                        <h3>QR Code (Quishing) Decoder</h3>
+                        <p>Decodes physical and digital QR codes in the browser via webcam or file upload, then routes payloads to the threat engine.</p>
+                        <ul class="feature-checklist">
+                            <li><span>✓</span> Client-side HTML5 QR image decoding</li>
+                            <li><span>✓</span> Live webcam video stream scanner</li>
+                            <li><span>✓</span> Cross-referenced threat scoring</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= HOW IT WORKS ================= -->
+        <section class="workflow-section" id="how-it-works">
+            <div class="container">
+                <div class="section-header-center">
+                    <span class="section-pill">SIMPLE WORKFLOW</span>
+                    <h2>How PhishGuard AI Protects You</h2>
+                    <p>Three straightforward steps to complete peace of mind</p>
+                </div>
+
+                <div class="workflow-grid">
+                    <div class="workflow-step-card">
+                        <span class="step-badge">STEP 01</span>
+                        <h4>Submit Suspicious Content</h4>
+                        <p>Paste a questionable web link, paste suspicious email copy, or scan an unknown QR code using your webcam.</p>
+                    </div>
+
+                    <div class="workflow-step-card">
+                        <span class="step-badge">STEP 02</span>
+                        <h4>AI Heuristic Evaluation</h4>
+                        <p>Our rule-based engine analyzes patterns, brand spoofing, typosquatting, and social engineering indicators.</p>
+                    </div>
+
+                    <div class="workflow-step-card">
+                        <span class="step-badge">STEP 03</span>
+                        <h4>Actionable Verdict</h4>
+                        <p>Receive an instantaneous 0-100% risk score with specific indicator breakdowns and recommendations.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BOTTOM CALL TO ACTION ================= -->
+        <section class="landing-cta-banner">
+            <div class="container">
+                <div class="cta-inner-card">
+                    <h2>Ready to Inspect Suspicious Threats?</h2>
+                    <p>Enter our interactive cybersecurity dashboard now to scan URLs, test emails, or decode QR codes with full AI heuristic reporting.</p>
+                    <a href="/dashboard" class="cta-btn-primary" style="font-size: 16px; padding: 15px 32px;">
+                        <span>Open PhishGuard Dashboard Scanner</span>
+                        <span>⚡</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="background: #02040a; border-top: 1px solid rgba(255,255,255,0.06); padding: 30px 0; text-align: center; font-size: 13px; color: #64748b;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+                🛡 <strong>PhishGuard AI</strong> • Intelligent Threat Defense & Detection Engine
+            </div>
+            <div style="display: flex; gap: 20px;">
+                <a href="/dashboard" style="color: #94a3b8;">Dashboard Scanner</a>
+                <a href="/login" style="color: #94a3b8;">Login Portal</a>
+                <a href="/reports" style="color: #94a3b8;">Threat Reports</a>
+                <a href="/admin" style="color: #38bdf8;">Admin Console</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= SCRIPT ================= -->
+    <script>
+        const API_URL = (window.location.protocol.startsWith("http") && (window.location.port === "5000" || window.location.port === "5001"))
+            ? ""
+            : "http://127.0.0.1:5000";
+
+        // Tab switcher for landing login card
+        function switchLandingAuth(mode) {
+            const loginForm = document.getElementById("landingLoginForm");
+            const regForm = document.getElementById("landingRegisterForm");
+            const tabLogin = document.getElementById("tabSignIn");
+            const tabReg = document.getElementById("tabSignUp");
+            const title = document.getElementById("portalTitle");
+            const sub = document.getElementById("portalSub");
+            const alertBox = document.getElementById("portalAlert");
+
+            alertBox.className = "portal-alert";
+            alertBox.style.display = "none";
+
+            if (mode === "register") {
+                loginForm.classList.remove("active");
+                regForm.classList.add("active");
+                tabLogin.classList.remove("active");
+                tabReg.classList.add("active");
+                title.textContent = "Create Account";
+                sub.textContent = "Start scanning threats with personalized security protection";
+                document.getElementById("landingRegUser").focus();
+            } else {
+                regForm.classList.remove("active");
+                loginForm.classList.add("active");
+                tabReg.classList.remove("active");
+                tabLogin.classList.add("active");
+                title.textContent = "Sign In to PhishGuard";
+                sub.textContent = "Access your security console and scan history";
+                document.getElementById("landingLoginId").focus();
+            }
+        }
+
+        function showPortalAlert(msg, isSuccess = false) {
+            const alertBox = document.getElementById("portalAlert");
+            alertBox.className = isSuccess ? "portal-alert success" : "portal-alert error";
+            alertBox.innerHTML = (isSuccess ? "<span>✓</span> " : "<span>⚠️</span> ") + msg;
+            alertBox.style.display = "flex";
+        }
+
+        // Handle Landing Page Login
+        document.getElementById("landingLoginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("btnLandingLogin");
+            const identifier = document.getElementById("landingLoginId").value.trim();
+            const password = document.getElementById("landingLoginPass").value;
+
+            btn.disabled = true;
+            btn.innerHTML = "<span>Authenticating...</span>";
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ identifier, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showPortalAlert("Welcome back! Redirecting to dashboard...", true);
+                    localStorage.setItem("phishguard_user", JSON.stringify(data.user));
+                    setTimeout(() => {
+                        window.location.href = "/dashboard";
+                    }, 700);
+                } else {
+                    showPortalAlert(data.message || "Invalid credentials. Please try again.");
+                }
+            } catch (err) {
+                console.error(err);
+                showPortalAlert("Could not reach authentication server.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "<span>Sign In to Scanner</span> <span>→</span>";
+            }
+        });
+
+        // Handle Landing Page Registration
+        document.getElementById("landingRegisterForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("btnLandingRegister");
+            const username = document.getElementById("landingRegUser").value.trim();
+            const email = document.getElementById("landingRegEmail").value.trim();
+            const password = document.getElementById("landingRegPass").value;
+
+            btn.disabled = true;
+            btn.innerHTML = "<span>Creating Account...</span>";
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ username, email, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showPortalAlert("Account created successfully! Taking you to the scanner...", true);
+                    localStorage.setItem("phishguard_user", JSON.stringify(data.user));
+                    setTimeout(() => {
+                        window.location.href = "/dashboard";
+                    }, 800);
+                } else {
+                    showPortalAlert(data.message || "Registration failed.");
+                }
+            } catch (err) {
+                console.error(err);
+                showPortalAlert("Could not reach registration server.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "<span>Create Free Account</span> <span>→</span>";
+            }
+        });
+
+        // Check Auth Status on Landing Page
+        async function checkLandingAuth() {
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, { credentials: "include" });
+                const data = await res.json();
+                if (data.authenticated && data.user) {
+                    showLoggedInState(data.user);
+                    return;
+                }
+            } catch (e) {}
+
+            const cached = localStorage.getItem("phishguard_user");
+            if (cached) {
+                try {
+                    const u = JSON.parse(cached);
+                    showLoggedInState(u);
+                } catch (e) {}
+            }
+        }
+
+        function showLoggedInState(user) {
+            document.getElementById("authFormsContainer").style.display = "none";
+            document.getElementById("loggedInProfileBox").style.display = "block";
+            document.getElementById("profileWelcomeUser").textContent = `Welcome back, ${user.username}!`;
+            document.getElementById("navBtnSignIn").style.display = "none";
+            document.getElementById("navUserBadgeLanding").style.display = "flex";
+            const isAdmin = user.role === "admin";
+            document.getElementById("landingUsernameDisplay").innerHTML = isAdmin 
+                ? `<span style="color:#ef4444; font-weight:800;">🛡️ Admin:</span> ${user.username}`
+                : `👤 ${user.username}`;
+            const adminLink = document.getElementById("landingNavAdminLink");
+            if (adminLink) adminLink.style.display = isAdmin ? "inline-flex" : "none";
+        }
+
+        async function logoutFromLanding() {
+            try {
+                await fetch(`${API_URL}/api/auth/logout`, { method: "POST", credentials: "include" });
+            } catch (e) {}
+            localStorage.removeItem("phishguard_user");
+            window.location.reload();
+        }
+
+        // Fetch Humanized Platform Metrics
+        async function fetchPlatformStats() {
+            try {
+                const res = await fetch(`${API_URL}/api/stats`);
+                const data = await res.json();
+                if (data.success && data.stats) {
+                    const total = data.stats.total_scans || 0;
+                    const displayTotal = total > 5 ? `${total.toLocaleString()}` : "10,000+";
+                    document.getElementById("statTotalScansClean").textContent = displayTotal;
+                }
+            } catch (e) {
+                console.warn("Could not fetch stats:", e);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener("DOMContentLoaded", () => {
+            checkLandingAuth();
+            fetchPlatformStats();
+        });
+    </script>
+</body>
+</html>
