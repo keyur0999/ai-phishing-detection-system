@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard | PhishGuard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Unified Navigation (Filtered dynamically by user role) -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/dashboard" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard</span>
+            </a>
+
+            <nav class="nav-links" id="navLinks">
+                <!-- Dynamically populated by nav.js based on User / Analyst / Admin role -->
+                <a href="/dashboard" class="active">Dashboard</a>
+                <a href="/analyze">Scan Message / URL</a>
+                <a href="/history">My Scan History</a>
+            </nav>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="userBadge" class="badge-pill neutral" style="font-size: 12px;">👤 Loading...</span>
+                <a href="/login" id="authBtn" class="secondary-button" style="padding: 6px 12px; font-size: 12px;">Sign Out</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 60px;">
+        <!-- Page Header in Plain English -->
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1 id="welcomeTitle">Security Dashboard</h1>
+                <p>Check suspicious messages, web links, or QR codes to protect yourself from online fraud.</p>
+            </div>
+            <div class="page-header-actions">
+                <a href="/analyze" class="primary-button">
+                    <span>+ Scan Something</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- High-level Counters -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-num" id="statTotalUser">0</div>
+                <div class="stat-label">Items Checked</div>
+            </div>
+            <div class="stat-card stat-safe">
+                <div class="stat-num" id="statSafeUser">0</div>
+                <div class="stat-label">Safe & Clean</div>
+            </div>
+            <div class="stat-card stat-suspicious">
+                <div class="stat-num" id="statSuspiciousUser">0</div>
+                <div class="stat-label">Suspicious Warnings</div>
+            </div>
+            <div class="stat-card stat-phishing">
+                <div class="stat-num" id="statPhishingUser">0</div>
+                <div class="stat-label">Scams / Phishing Blocked</div>
+            </div>
+        </div>
+
+        <!-- Quick Scan Launcher -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 32px;">
+            <div class="triage-card" style="margin: 0;">
+                <div style="font-size: 20px; margin-bottom: 8px;">✉️</div>
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Suspicious Email or Message</h3>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px;">Paste the text of any email, SMS, or direct message to see if it is a fake scam.</p>
+                <a href="/analyze?tab=email" class="secondary-button" style="font-size: 12px; padding: 6px 12px;">Scan Message &rarr;</a>
+            </div>
+
+            <div class="triage-card" style="margin: 0;">
+                <div style="font-size: 20px; margin-bottom: 8px;">🔗</div>
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Website Link (URL)</h3>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px;">Check if a web address is safe before you click or enter any passwords.</p>
+                <a href="/analyze?tab=url" class="secondary-button" style="font-size: 12px; padding: 6px 12px;">Scan Web Link &rarr;</a>
+            </div>
+
+            <div class="triage-card" style="margin: 0;">
+                <div style="font-size: 20px; margin-bottom: 8px;">📷</div>
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">QR Code</h3>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px;">Upload or scan a QR code to see where it leads before opening it on your phone.</p>
+                <a href="/analyze?tab=qr" class="secondary-button" style="font-size: 12px; padding: 6px 12px;">Scan QR Code &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Recent Scan History Table -->
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div>
+                    <h3 style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Your Recent Scans</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Items you have recently checked for safety.</p>
+                </div>
+                <a href="/history" class="secondary-button" style="font-size: 11px; padding: 4px 8px;">View All &rarr;</a>
+            </div>
+
+            <div class="table-wrap" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Scan #</th>
+                            <th style="width: 90px;">Type</th>
+                            <th>What You Scanned</th>
+                            <th style="width: 140px;">Result</th>
+                            <th style="width: 100px;">Risk Level</th>
+                            <th style="width: 140px;">Date</th>
+                            <th style="width: 100px; text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentScansBody">
+                        <tr>
+                            <td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">Loading your recent scans...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="nav.js"></script>
+    <script>
+        const API_URL = "";
+
+        async function loadDashboard() {
+            // Setup navigation and get active user
+            const user = await setupRoleNavigation("dashboard");
+            if (user) {
+                document.getElementById("welcomeTitle").textContent = `Welcome back, ${user.username}`;
+            }
+
+            // Load user scan history
+            try {
+                const res = await fetch(`${API_URL}/api/history?limit=10`);
+                const data = await res.json();
+                if (data.success && data.history) {
+                    const scans = data.history;
+                    renderStats(scans);
+                    renderRecentTable(scans);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderStats(scans) {
+            document.getElementById("statTotalUser").textContent = scans.length;
+            let safe = 0, susp = 0, phish = 0;
+            scans.forEach(s => {
+                if (s.verdict === "safe") safe++;
+                else if (s.verdict === "suspicious") susp++;
+                else if (s.verdict === "phishing") phish++;
+            });
+            document.getElementById("statSafeUser").textContent = safe;
+            document.getElementById("statSuspiciousUser").textContent = susp;
+            document.getElementById("statPhishingUser").textContent = phish;
+        }
+
+        function renderRecentTable(scans) {
+            const tbody = document.getElementById("recentScansBody");
+            if (!scans || scans.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">You have not scanned any items yet. Click "+ Scan Something" above.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = scans.slice(0, 8).map(s => {
+                const raw = s.input_data || "";
+                const targetShort = raw.length > 50 ? raw.slice(0, 47) + "..." : raw;
+                const v = (s.verdict || "safe").toLowerCase();
+
+                let verdictLabel = "Safe";
+                let vClass = "safe";
+                if (v === "phishing") {
+                    verdictLabel = "Fake Scam";
+                    vClass = "phishing";
+                } else if (v === "suspicious") {
+                    verdictLabel = "Be Careful";
+                    vClass = "suspicious";
+                }
+
+                return `
+                    <tr>
+                        <td style="font-family:var(--font-mono); font-size:12px;">#${s.id}</td>
+                        <td style="text-transform:uppercase; font-size:11px; font-weight:700;">${s.scan_type}</td>
+                        <td style="font-family:var(--font-mono); font-size:12px;" title="${escapeHtml(raw)}">${escapeHtml(targetShort)}</td>
+                        <td><span class="badge-pill ${vClass}">${verdictLabel}</span></td>
+                        <td style="font-family:var(--font-mono); font-weight:700;">${s.risk_score} / 100</td>
+                        <td style="font-size:12px; color:var(--text-secondary);">${(s.created_at || "").slice(0, 16).replace("T", " ")}</td>
+                        <td style="text-align: right;">
+                            <a href="/result?id=${s.id}" class="btn-table-action">View Result &rarr;</a>
+                        </td>
+
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function escapeHtml(str) {
+            return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        document.addEventListener("DOMContentLoaded", loadDashboard);
+    </script>
+</body>
+</html>

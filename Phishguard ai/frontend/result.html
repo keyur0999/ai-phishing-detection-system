@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Result | PhishGuard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Unified Navigation (Filtered dynamically by user role) -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/dashboard" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard</span>
+            </a>
+
+            <nav class="nav-links" id="navLinks">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/analyze">Scan Message / URL</a>
+                <a href="/history">My Scan History</a>
+            </nav>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="userBadge" class="badge-pill neutral" style="font-size: 12px;">👤 Loading...</span>
+                <a href="/analyze" class="primary-button" style="padding: 6px 12px; font-size: 12px;">+ New Scan</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 60px;">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1 id="resultTitle">Scan Safety Report</h1>
+                <p id="resultSubtitle">Detailed findings showing whether this item is safe or a scam.</p>
+            </div>
+            <div class="page-header-actions">
+                <button class="secondary-button" onclick="copyResultLink()">Copy Link</button>
+                <a href="/analyze" class="primary-button">+ Scan Another Item</a>
+            </div>
+        </div>
+
+        <div id="loadingState" style="text-align: center; padding: 60px 0; color: var(--text-muted);">
+            <p>Loading scan results...</p>
+        </div>
+
+        <div id="errorState" style="display:none; text-align: center; padding: 40px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+            <h3 style="color: var(--danger); margin-bottom: 8px;">Scan Record Not Found</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 16px;">This scan does not exist or has expired.</p>
+            <a href="/analyze" class="primary-button">Start New Scan</a>
+        </div>
+
+        <div id="resultContent" style="display: none;">
+            <!-- Simple Overview Cards -->
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <div class="meta-label">Scan Number</div>
+                    <div class="meta-value" id="metaScanId" style="font-family: var(--font-mono);">-</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Item Type</div>
+                    <div class="meta-value" id="metaScanType" style="text-transform: uppercase;">-</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Date Checked</div>
+                    <div class="meta-value" id="metaTimestamp">-</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Risk Rating</div>
+                    <div class="meta-value" id="metaRiskNum">-</div>
+                </div>
+            </div>
+
+            <!-- Main Verdict Card in Simple English -->
+            <div class="triage-card" style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+                    <div>
+                        <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">Safety Verdict</span>
+                        <span id="verdictBadge" class="badge-pill" style="font-size: 15px; padding: 6px 14px;">Evaluating...</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 12px; color: var(--text-secondary);">Calculated Risk</span>
+                        <div style="font-size: 24px; font-weight: 700; font-family: var(--font-mono);" id="riskScoreValue">0 / 100</div>
+                    </div>
+                </div>
+
+                <div class="chart-bar-track" style="height: 10px; margin-bottom: 14px;">
+                    <div id="riskScoreBar" class="chart-bar-fill" style="width: 0%; background: var(--success);"></div>
+                </div>
+
+                <div id="verdictAdviceBox" style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px;">
+                    <strong id="verdictHeadline" style="display: block; margin-bottom: 4px; font-size: 14px;">-</strong>
+                    <p id="verdictAdvice" style="font-size: 13px; color: var(--text-secondary); margin: 0;">-</p>
+                </div>
+            </div>
+
+            <!-- What was scanned -->
+            <div class="triage-card" style="margin-bottom: 24px;">
+                <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px;">Scanned Content</h3>
+                <div id="targetDisplay" class="triage-target" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;">-</div>
+            </div>
+
+            <!-- Reasons list in everyday language -->
+            <div class="triage-card" style="margin-bottom: 24px;">
+                <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px;">Detailed Safety Findings</h3>
+                <ul id="reasonsList" class="reasons-list">
+                    <li class="clean-item">Verified clean: No scam words or dangerous links found.</li>
+                </ul>
+            </div>
+
+            <!-- Threat Report Option for the user -->
+            <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <h4 style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Think this is a scam or false alarm?</h4>
+                        <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">Send this scan directly to the company security team for human verification.</p>
+                    </div>
+                    <button class="secondary-button" id="toggleReportBtn" onclick="toggleReportForm()">Report to Security Team</button>
+                </div>
+
+                <div id="reportFormBox" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+                    <div class="input-group">
+                        <label class="input-label" for="reportReason">Describe the issue</label>
+                        <textarea id="reportReason" class="textarea-input" rows="3" placeholder="Tell the security team why this looks suspicious (e.g. sender claims to be payroll, unusual link, unexpected invoice)..."></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                        <button class="secondary-button" onclick="toggleReportForm()">Cancel</button>
+                        <button class="danger-button" id="submitReportBtn" onclick="submitThreatReport()">Send to Security Team</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="nav.js"></script>
+    <script>
+        const API_URL = "";
+        let currentScan = null;
+
+        async function initPage() {
+            await setupRoleNavigation("result");
+
+            const params = new URLSearchParams(window.location.search);
+            const scanId = params.get("id");
+
+            if (scanId) {
+                loadScanById(scanId);
+            } else {
+                loadLatestScan();
+            }
+        }
+
+        async function loadScanById(id) {
+            try {
+                const res = await fetch(`${API_URL}/api/scan/${id}`);
+                const data = await res.json();
+                if (data.success && data.scan) {
+                    currentScan = data.scan;
+                    renderScanDetails(data.scan);
+                } else {
+                    showError();
+                }
+            } catch (err) {
+                showError();
+            }
+        }
+
+        async function loadLatestScan() {
+            try {
+                const res = await fetch(`${API_URL}/api/history?limit=1`);
+                const data = await res.json();
+                if (data.success && data.history && data.history.length > 0) {
+                    currentScan = data.history[0];
+                    renderScanDetails(currentScan);
+                } else {
+                    showError();
+                }
+            } catch (err) {
+                showError();
+            }
+        }
+
+        function renderScanDetails(scan) {
+            document.getElementById("loadingState").style.display = "none";
+            document.getElementById("errorState").style.display = "none";
+            document.getElementById("resultContent").style.display = "block";
+
+            document.getElementById("resultTitle").textContent = `Scan Report #${scan.id}`;
+            document.getElementById("metaScanId").textContent = `#${scan.id}`;
+            document.getElementById("metaScanType").textContent = scan.scan_type || "ITEM";
+            document.getElementById("metaTimestamp").textContent = (scan.created_at || "").slice(0, 16).replace("T", " ");
+
+            const score = scan.risk_score || 0;
+            document.getElementById("metaRiskNum").textContent = `${score} / 100`;
+            document.getElementById("riskScoreValue").textContent = `${score} / 100`;
+
+            const scoreBar = document.getElementById("riskScoreBar");
+            scoreBar.style.width = `${score}%`;
+
+            const verdict = (scan.verdict || "safe").toLowerCase();
+            const badge = document.getElementById("verdictBadge");
+            const headline = document.getElementById("verdictHeadline");
+            const advice = document.getElementById("verdictAdvice");
+
+            if (verdict === "phishing") {
+                badge.className = "badge-pill phishing";
+                badge.textContent = "Fake Scam / Phishing";
+                scoreBar.style.background = "var(--danger)";
+                headline.textContent = "Dangerous: Do not click links or enter passwords.";
+                headline.style.color = "var(--danger)";
+                advice.textContent = "This message or link appears to be an impersonation scam designed to compromise your account or steal funds. Delete it or report it to security.";
+            } else if (verdict === "suspicious") {
+                badge.className = "badge-pill suspicious";
+                badge.textContent = "Be Careful / Suspicious";
+                scoreBar.style.background = "var(--warning)";
+                headline.textContent = "Warning: Use caution before responding.";
+                headline.style.color = "var(--warning)";
+                advice.textContent = "This message contains high urgency or unusual links. Confirm directly with the real sender through a trusted phone number before taking action.";
+            } else {
+                badge.className = "badge-pill safe";
+                badge.textContent = "Safe & Clean";
+                scoreBar.style.background = "var(--success)";
+                headline.textContent = "No threats detected.";
+                headline.style.color = "var(--success)";
+                advice.textContent = "This item does not contain known phishing keywords, deceptive links, or blacklisted domains.";
+            }
+
+            document.getElementById("targetDisplay").textContent = scan.input_data || "N/A";
+
+            // Reasons
+            const rList = document.getElementById("reasonsList");
+            let reasons = [];
+            if (scan.reasons) {
+                if (typeof scan.reasons === "string") {
+                    try { reasons = JSON.parse(scan.reasons); } catch (e) { reasons = [scan.reasons]; }
+                } else if (Array.isArray(scan.reasons)) {
+                    reasons = scan.reasons;
+                }
+            }
+
+            if (!reasons || reasons.length === 0) {
+                rList.innerHTML = `<li class="clean-item">Clean: No scam triggers or dangerous websites detected.</li>`;
+            } else {
+                rList.innerHTML = reasons.map(r => `<li>${escapeHtml(r)}</li>`).join("");
+            }
+        }
+
+        function showError() {
+            document.getElementById("loadingState").style.display = "none";
+            document.getElementById("resultContent").style.display = "none";
+            document.getElementById("errorState").style.display = "block";
+        }
+
+        function toggleReportForm() {
+            const form = document.getElementById("reportFormBox");
+            form.style.display = form.style.display === "none" ? "block" : "none";
+        }
+
+        async function submitThreatReport() {
+            if (!currentScan) return;
+            const reason = document.getElementById("reportReason").value.trim();
+            if (!reason) {
+                alert("Please describe why you are reporting this item.");
+                return;
+            }
+
+            const btn = document.getElementById("submitReportBtn");
+            btn.disabled = true;
+            btn.textContent = "Sending...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/reports`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ scan_id: currentScan.id, reason })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("Report successfully sent to the security team!");
+                    document.getElementById("reportFormBox").style.display = "none";
+                    document.getElementById("reportReason").value = "";
+                } else {
+                    alert("Submission failed: " + data.message);
+                }
+            } catch (err) {
+                alert("Network error: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Send to Security Team";
+            }
+        }
+
+        function copyResultLink() {
+            if (!currentScan) return;
+            const url = `${window.location.origin}/result?id=${currentScan.id}`;
+            navigator.clipboard.writeText(url).then(() => {
+                alert("Link copied to clipboard!");
+            }).catch(() => {
+                prompt("Copy this link:", url);
+            });
+        }
+
+        function escapeHtml(str) {
+            return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        document.addEventListener("DOMContentLoaded", initPage);
+    </script>
+</body>
+</html>

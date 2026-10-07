@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Users | PhishGuard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Unified Navigation (Filtered dynamically by user role) -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/admin" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard</span>
+            </a>
+
+            <nav class="nav-links" id="navLinks">
+                <a href="/admin">Admin Dashboard</a>
+                <a href="/users" class="active">Manage Users</a>
+                <a href="/analyst">Analyst Queue</a>
+                <a href="/history">Scan History</a>
+                <a href="/indicators">Blocklist Rules</a>
+            </nav>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="userBadge" class="badge-pill phishing" style="font-size: 12px;">⚙️ Administrator</span>
+                <a href="/login" id="authBtn" class="secondary-button" style="padding: 6px 12px; font-size: 12px;">Sign Out</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 60px;">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Company User Directory</h1>
+                <p>Manage company employees, analyst accounts, and system access.</p>
+            </div>
+            <div class="page-header-actions">
+                <button class="primary-button" onclick="toggleAddUserBox()">+ Add Employee</button>
+            </div>
+        </div>
+
+        <!-- Metric Summary -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-num" id="statTotalUsers">0</div>
+                <div class="stat-label">Total Accounts</div>
+            </div>
+            <div class="stat-card stat-safe">
+                <div class="stat-num" id="statStandardUsers">0</div>
+                <div class="stat-label">Standard Employees</div>
+            </div>
+            <div class="stat-card stat-suspicious">
+                <div class="stat-num" id="statAnalystUsers">0</div>
+                <div class="stat-label">Security Analysts</div>
+            </div>
+            <div class="stat-card stat-phishing">
+                <div class="stat-num" id="statAdminUsers">0</div>
+                <div class="stat-label">Administrators</div>
+            </div>
+        </div>
+
+        <!-- Add Employee Form (Hidden by default) -->
+        <div id="addUserBox" class="triage-card" style="display: none; margin-bottom: 24px; border-color: var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 style="font-size: 15px; font-weight: 600;">Add New Employee / Account</h3>
+                <button class="secondary-button" onclick="toggleAddUserBox()" style="padding: 2px 8px; font-size: 11px;">Close</button>
+            </div>
+
+            <form onsubmit="handleCreateUser(event)">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 14px;">
+                    <div>
+                        <label class="input-label" for="newUsername">Username</label>
+                        <input type="text" id="newUsername" class="text-input" placeholder="e.g. sarah_connor" required minlength="3">
+                    </div>
+                    <div>
+                        <label class="input-label" for="newEmail">Work Email</label>
+                        <input type="email" id="newEmail" class="text-input" placeholder="sarah@company.com">
+                    </div>
+                    <div>
+                        <label class="input-label" for="newPassword">Temporary Password</label>
+                        <input type="password" id="newPassword" class="text-input" placeholder="••••••••" required minlength="6">
+                    </div>
+                    <div>
+                        <label class="input-label" for="newRole">Role</label>
+                        <select id="newRole" class="select-input">
+                            <option value="user">Employee (Standard User)</option>
+                            <option value="analyst">Security Analyst</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="secondary-button" onclick="toggleAddUserBox()">Cancel</button>
+                    <button type="submit" id="btnSaveUser" class="primary-button">Create User Account</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="filter-bar">
+            <input type="text" id="userSearchInput" placeholder="Search by name, username, or email..." oninput="filterUsers()" style="flex: 1; min-width: 200px;">
+            <select id="roleFilter" onchange="filterUsers()">
+                <option value="all">All Roles</option>
+                <option value="user">Employees Only</option>
+                <option value="analyst">Security Analysts Only</option>
+                <option value="admin">Administrators Only</option>
+            </select>
+        </div>
+
+        <!-- Users Table -->
+        <div class="table-wrap" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">ID #</th>
+                        <th>Employee</th>
+                        <th>Email Address</th>
+                        <th style="width: 140px;">Account Role</th>
+                        <th style="width: 150px;">Date Joined</th>
+                        <th style="width: 100px; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading employee directory...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="nav.js"></script>
+    <script>
+        const API_URL = "";
+        let allUsers = [];
+
+        async function initPage() {
+            await setupRoleNavigation("users");
+            await loadUsers();
+        }
+
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/users?limit=150`);
+                const data = await res.json();
+                if (data.success && data.users) {
+                    allUsers = data.users;
+                    renderUserStats();
+                    filterUsers();
+                } else if (res.status === 403 || res.status === 401) {
+                    document.getElementById("usersTableBody").innerHTML = `
+                        <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--danger);">
+                            Administrator privileges required to view company directory.
+                        </td></tr>
+                    `;
+                }
+            } catch (err) {
+                console.error("Failed to load users", err);
+            }
+        }
+
+        function renderUserStats() {
+            document.getElementById("statTotalUsers").textContent = allUsers.length;
+            const users = allUsers.filter(u => u.role === "user").length;
+            const analysts = allUsers.filter(u => u.role === "analyst").length;
+            const admins = allUsers.filter(u => u.role === "admin").length;
+
+            document.getElementById("statStandardUsers").textContent = users;
+            document.getElementById("statAnalystUsers").textContent = analysts;
+            document.getElementById("statAdminUsers").textContent = admins;
+        }
+
+        function filterUsers() {
+            const query = document.getElementById("userSearchInput").value.trim().toLowerCase();
+            const roleVal = document.getElementById("roleFilter").value;
+
+            const filtered = allUsers.filter(u => {
+                const nameMatch = (u.username || "").toLowerCase().includes(query) || (u.email || "").toLowerCase().includes(query);
+                const roleMatch = (roleVal === "all") || (u.role === roleVal);
+                return nameMatch && roleMatch;
+            });
+
+            renderUsersTable(filtered);
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById("usersTableBody");
+            if (!users || users.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">No accounts matched your search.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => {
+                const r = (u.role || "user").toLowerCase();
+                let badgeClass = "neutral";
+                let rText = "EMPLOYEE";
+                if (r === "admin") { badgeClass = "phishing"; rText = "ADMIN"; }
+                else if (r === "analyst") { badgeClass = "suspicious"; rText = "ANALYST"; }
+
+                return `
+                    <tr>
+                        <td style="font-family:var(--font-mono); font-size:12px;">#${u.id}</td>
+                        <td style="font-weight:600; color:var(--text-primary);">${escapeHtml(u.username)}</td>
+                        <td style="font-size:13px; color:var(--text-secondary);">${escapeHtml(u.email || "No email")}</td>
+                        <td><span class="badge-pill ${badgeClass}">${rText}</span></td>
+                        <td style="font-size:12px; color:var(--text-secondary);">${(u.created_at || "").slice(0, 16).replace("T", " ")}</td>
+                        <td style="text-align: right;">
+                            <button class="btn-table-danger" onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')">
+                                Remove
+                            </button>
+                        </td>
+
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function toggleAddUserBox() {
+            const box = document.getElementById("addUserBox");
+            box.style.display = box.style.display === "none" ? "block" : "none";
+        }
+
+        async function handleCreateUser(e) {
+            e.preventDefault();
+            const username = document.getElementById("newUsername").value.trim();
+            const email = document.getElementById("newEmail").value.trim();
+            const password = document.getElementById("newPassword").value.trim();
+            const role = document.getElementById("newRole").value;
+
+            const btn = document.getElementById("btnSaveUser");
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/users`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, email, password, role })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(`User account '${username}' created successfully.`);
+                    document.getElementById("newUsername").value = "";
+                    document.getElementById("newEmail").value = "";
+                    document.getElementById("newPassword").value = "";
+                    toggleAddUserBox();
+                    await loadUsers();
+                } else {
+                    alert("Failed: " + data.message);
+                }
+            } catch (err) {
+                alert("Error: " + err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function deleteUser(userId, username) {
+            if (!confirm(`Are you sure you want to remove account '${username}' (#${userId})?`)) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/users/${userId}`, { method: "DELETE" });
+                const data = await res.json();
+                if (data.success) {
+                    await loadUsers();
+                } else {
+                    alert("Failed: " + data.message);
+                }
+            } catch (err) {
+                alert("Error removing account: " + err.message);
+            }
+        }
+
+        function escapeHtml(str) {
+            return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        document.addEventListener("DOMContentLoaded", initPage);
+    </script>
+</body>
+</html>

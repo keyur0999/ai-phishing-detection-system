@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | PhishGuard</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: var(--bg-page);
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-lg);
+            padding: 34px 28px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .auth-header .logo {
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .auth-header h1 {
+            font-size: 21px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .auth-header p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Role Selection Tabs */
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+
+        .role-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 8px 6px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+        }
+
+        .role-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .role-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .role-hint-box {
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            margin-bottom: 18px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fill-demo-btn {
+            background: rgba(37, 99, 235, 0.12);
+            border: 1px solid rgba(37, 99, 235, 0.35);
+            color: #60a5fa;
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .fill-demo-btn:hover {
+            background: rgba(37, 99, 235, 0.25);
+            border-color: #60a5fa;
+            color: #ffffff;
+        }
+
+
+        .auth-mode-switch {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .auth-mode-switch a {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-page">
+        <div class="auth-card">
+            <!-- Header -->
+            <div class="auth-header">
+                <a href="/dashboard" class="logo">
+                    <span class="logo-icon">🛡</span>
+                    <span>PhishGuard</span>
+                </a>
+                <h1 id="pageHeading">Sign In</h1>
+                <p id="pageSubheading">Select your role to access your workspace</p>
+            </div>
+
+            <!-- Role Selector Tabs -->
+            <div class="role-selector" id="roleSelector">
+                <button type="button" class="role-btn active" id="btnRoleUser" onclick="setRole('user')">
+                    User
+                </button>
+                <button type="button" class="role-btn" id="btnRoleAnalyst" onclick="setRole('analyst')">
+                    Analyst
+                </button>
+                <button type="button" class="role-btn" id="btnRoleAdmin" onclick="setRole('admin')">
+                    Admin
+                </button>
+            </div>
+
+            <!-- Role description & Quick Demo Credential Button -->
+            <div class="role-hint-box" id="roleHintBox">
+                <span id="roleDescText">Scan emails and web links for scams.</span>
+                <button type="button" class="fill-demo-btn" onclick="fillDemoAccount()">Use Demo</button>
+            </div>
+
+            <!-- Status Alert Message -->
+            <div id="authAlert" style="display: none; padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 13px;"></div>
+
+            <!-- Sign In Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <label class="input-label" for="loginIdentifier">Username or Email</label>
+                    <input type="text" id="loginIdentifier" class="text-input" placeholder="e.g. demo_user" required autocomplete="username">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" class="text-input" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+
+                <button type="submit" id="submitLoginBtn" class="primary-button" style="width: 100%; justify-content: center; padding: 10px; margin-top: 6px;">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Registration Form (Hidden by default) -->
+            <form id="registerForm" onsubmit="handleRegister(event)" style="display: none;">
+                <div class="input-group">
+                    <label class="input-label" for="regUsername">Choose Username</label>
+                    <input type="text" id="regUsername" class="text-input" placeholder="e.g. john_doe" required minlength="3">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" for="regEmail">Work Email (Optional)</label>
+                    <input type="email" id="regEmail" class="text-input" placeholder="john@company.com">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" for="regRole">Account Type</label>
+                    <select id="regRole" class="select-input">
+                        <option value="user">User / Employee</option>
+                        <option value="analyst">Security Analyst</option>
+                        <option value="admin">Company Administrator</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" for="regPassword">Password (6+ chars)</label>
+                    <input type="password" id="regPassword" class="text-input" placeholder="••••••••" required minlength="6">
+                </div>
+
+                <button type="submit" id="submitRegBtn" class="primary-button" style="width: 100%; justify-content: center; padding: 10px; margin-top: 6px;">
+                    Create Account
+                </button>
+            </form>
+
+            <!-- Switcher between Sign In and Sign Up -->
+            <div class="auth-mode-switch">
+                <span id="switchPrompt">Don't have an account?</span>
+                <a id="switchAction" onclick="toggleAuthMode()">Create account</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "";
+        let currentRole = "user";
+        let isRegisterMode = false;
+
+        const rolePresets = {
+            user: {
+                title: "User / Employee Sign In",
+                desc: "Scan messages, web links, and QR codes.",
+                demoUser: "demo_user",
+                demoPass: "user123"
+            },
+            analyst: {
+                title: "Security Analyst Sign In",
+                desc: "Inspect reported threats and check scan logs.",
+                demoUser: "security_analyst",
+                demoPass: "analyst123"
+            },
+            admin: {
+                title: "Administrator Sign In",
+                desc: "Manage company user accounts and system rules.",
+                demoUser: "admin_manager",
+                demoPass: "admin123"
+            }
+        };
+
+        function setRole(role) {
+            currentRole = role;
+            document.querySelectorAll(".role-btn").forEach(b => b.classList.remove("active"));
+            const btn = document.getElementById(`btnRole${role.charAt(0).toUpperCase() + role.slice(1)}`);
+            if (btn) btn.classList.add("active");
+
+            const preset = rolePresets[role];
+            document.getElementById("roleDescText").textContent = preset.desc;
+
+            if (!isRegisterMode) {
+                document.getElementById("pageHeading").textContent = preset.title;
+            }
+
+            // Update registration select if visible
+            const regRoleSelect = document.getElementById("regRole");
+            if (regRoleSelect) regRoleSelect.value = role;
+        }
+
+        function fillDemoAccount() {
+            const preset = rolePresets[currentRole];
+            if (isRegisterMode) {
+                toggleAuthMode();
+            }
+            document.getElementById("loginIdentifier").value = preset.demoUser;
+            document.getElementById("loginPassword").value = preset.demoPass;
+            showAlert(`Demo credentials loaded for ${currentRole.toUpperCase()}. Click 'Sign In'.`, "info");
+        }
+
+        function toggleAuthMode() {
+            isRegisterMode = !isRegisterMode;
+            const loginForm = document.getElementById("loginForm");
+            const regForm = document.getElementById("registerForm");
+            const heading = document.getElementById("pageHeading");
+            const roleBox = document.getElementById("roleHintBox");
+            const switchPrompt = document.getElementById("switchPrompt");
+            const switchAction = document.getElementById("switchAction");
+
+            if (isRegisterMode) {
+                loginForm.style.display = "none";
+                regForm.style.display = "block";
+                roleBox.style.display = "none";
+                heading.textContent = "Create New Account";
+                document.getElementById("regRole").value = currentRole;
+                switchPrompt.textContent = "Already have an account?";
+                switchAction.textContent = "Sign In";
+            } else {
+                loginForm.style.display = "block";
+                regForm.style.display = "none";
+                roleBox.style.display = "flex";
+                heading.textContent = rolePresets[currentRole].title;
+                switchPrompt.textContent = "Don't have an account?";
+                switchAction.textContent = "Create account";
+            }
+            hideAlert();
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const identifier = document.getElementById("loginIdentifier").value.trim();
+            const password = document.getElementById("loginPassword").value.trim();
+
+            if (!identifier || !password) {
+                showAlert("Please enter your username and password.", "error");
+                return;
+            }
+
+            const btn = document.getElementById("submitLoginBtn");
+            btn.disabled = true;
+            btn.textContent = "Signing In...";
+            hideAlert();
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ identifier, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showAlert("Signed in successfully. Redirecting...", "success");
+                    const role = data.role || (data.user && data.user.role) || "user";
+                    setTimeout(() => {
+                        if (role === "admin") {
+                            window.location.href = "/admin";
+                        } else if (role === "analyst") {
+                            window.location.href = "/analyst";
+                        } else {
+                            window.location.href = "/dashboard";
+                        }
+                    }, 400);
+                } else {
+                    showAlert(data.message || "Invalid credentials.", "error");
+                }
+            } catch (err) {
+                showAlert("Network connection error. Please try again.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Sign In";
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById("regUsername").value.trim();
+            const email = document.getElementById("regEmail").value.trim();
+            const password = document.getElementById("regPassword").value.trim();
+            const role = document.getElementById("regRole").value;
+
+            if (!username || !password) {
+                showAlert("Please enter a username and password.", "error");
+                return;
+            }
+
+            const btn = document.getElementById("submitRegBtn");
+            btn.disabled = true;
+            btn.textContent = "Creating Account...";
+            hideAlert();
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, email, password, role })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showAlert("Account created! Redirecting to your dashboard...", "success");
+                    setTimeout(() => {
+                        if (role === "admin") {
+                            window.location.href = "/admin";
+                        } else if (role === "analyst") {
+                            window.location.href = "/analyst";
+                        } else {
+                            window.location.href = "/dashboard";
+                        }
+                    }, 500);
+                } else {
+                    showAlert(data.message || "Registration failed.", "error");
+                }
+            } catch (err) {
+                showAlert("Network error during registration.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Create Account";
+            }
+        }
+
+        function showAlert(msg, type) {
+            const box = document.getElementById("authAlert");
+            box.style.display = "block";
+            box.textContent = msg;
+            if (type === "error") {
+                box.style.background = "var(--danger-subtle)";
+                box.style.color = "var(--danger)";
+                box.style.border = "1px solid var(--danger-border)";
+            } else if (type === "success") {
+                box.style.background = "var(--success-subtle)";
+                box.style.color = "var(--success)";
+                box.style.border = "1px solid var(--success-border)";
+            } else {
+                box.style.background = "var(--bg-input)";
+                box.style.color = "var(--text-secondary)";
+                box.style.border = "1px solid var(--border-medium)";
+            }
+        }
+
+        function hideAlert() {
+            document.getElementById("authAlert").style.display = "none";
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const params = new URLSearchParams(window.location.search);
+            const roleParam = params.get("role");
+            if (roleParam && ["user", "analyst", "admin"].includes(roleParam)) {
+                setRole(roleParam);
+            } else {
+                setRole("user");
+            }
+        });
+    </script>
+</body>
+</html>

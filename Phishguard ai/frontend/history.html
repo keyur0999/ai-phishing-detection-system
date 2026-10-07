@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan History | PhishGuard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Unified Navigation (Filtered dynamically by user role) -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/dashboard" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard</span>
+            </a>
+
+            <nav class="nav-links" id="navLinks">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/analyze">Scan Message / URL</a>
+                <a href="/history" class="active">My Scan History</a>
+            </nav>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="userBadge" class="badge-pill neutral" style="font-size: 12px;">👤 Loading...</span>
+                <a href="/analyze" class="primary-button" style="padding: 6px 12px; font-size: 12px;">+ New Scan</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 60px;">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1 id="historyTitle">Scan History</h1>
+                <p>Review the emails, web addresses, and QR codes that have been checked for scams.</p>
+            </div>
+            <div class="page-header-actions">
+                <button class="secondary-button" onclick="loadHistory()">Refresh</button>
+                <a href="/analyze" class="primary-button">+ Scan Item</a>
+            </div>
+        </div>
+
+        <!-- Metric Summary -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-num" id="histTotal">0</div>
+                <div class="stat-label">Total Items Checked</div>
+            </div>
+            <div class="stat-card stat-safe">
+                <div class="stat-num" id="histSafe">0</div>
+                <div class="stat-label">Safe Items</div>
+            </div>
+            <div class="stat-card stat-suspicious">
+                <div class="stat-num" id="histSusp">0</div>
+                <div class="stat-label">Suspicious Warnings</div>
+            </div>
+            <div class="stat-card stat-phishing">
+                <div class="stat-num" id="histPhish">0</div>
+                <div class="stat-label">Scams Blocked</div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <input type="text" id="histSearchInput" placeholder="Search by text, web link, or keyword..." oninput="applyFilters()" style="flex: 1; min-width: 200px;">
+            <select id="typeFilter" onchange="applyFilters()">
+                <option value="all">All Types</option>
+                <option value="email">Email / Message</option>
+                <option value="url">Website Link</option>
+                <option value="qr">QR Code</option>
+            </select>
+            <select id="verdictFilter" onchange="applyFilters()">
+                <option value="all">All Results</option>
+                <option value="safe">Safe Only</option>
+                <option value="suspicious">Suspicious Only</option>
+                <option value="phishing">Fake Scams Only</option>
+            </select>
+        </div>
+
+        <!-- Scans Table -->
+        <div class="table-wrap" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">Scan #</th>
+                        <th style="width: 90px;">Type</th>
+                        <th>Scanned Target</th>
+                        <th style="width: 140px;">Result</th>
+                        <th style="width: 100px;">Risk Score</th>
+                        <th style="width: 150px;">Date Checked</th>
+                        <th style="width: 100px; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">Loading scan records...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="nav.js"></script>
+    <script>
+        const API_URL = "";
+        let allScans = [];
+
+        async function initPage() {
+            await setupRoleNavigation("history");
+            await loadHistory();
+        }
+
+        async function loadHistory() {
+            try {
+                const res = await fetch(`${API_URL}/api/history?limit=150`);
+                const data = await res.json();
+                if (data.success && data.history) {
+                    allScans = data.history;
+                    renderStats();
+                    applyFilters();
+                }
+            } catch (err) {
+                console.error("Failed to load history", err);
+            }
+        }
+
+        function renderStats() {
+            document.getElementById("histTotal").textContent = allScans.length;
+            let safe = 0, susp = 0, phish = 0;
+            allScans.forEach(s => {
+                if (s.verdict === "safe") safe++;
+                else if (s.verdict === "suspicious") susp++;
+                else if (s.verdict === "phishing") phish++;
+            });
+            document.getElementById("histSafe").textContent = safe;
+            document.getElementById("histSusp").textContent = susp;
+            document.getElementById("histPhish").textContent = phish;
+        }
+
+        function applyFilters() {
+            const query = document.getElementById("histSearchInput").value.trim().toLowerCase();
+            const typeVal = document.getElementById("typeFilter").value;
+            const verdictVal = document.getElementById("verdictFilter").value;
+
+            const filtered = allScans.filter(s => {
+                const textMatch = (s.input_data || "").toLowerCase().includes(query);
+                const typeMatch = (typeVal === "all") || (s.scan_type && s.scan_type.toLowerCase() === typeVal);
+                const verdictMatch = (verdictVal === "all") || (s.verdict && s.verdict.toLowerCase() === verdictVal);
+                return textMatch && typeMatch && verdictMatch;
+            });
+
+            renderTable(filtered);
+        }
+
+        function renderTable(scans) {
+            const tbody = document.getElementById("historyTableBody");
+            if (!scans || scans.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:35px; color:var(--text-muted);">No scan records match your filter.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = scans.map(s => {
+                const raw = s.input_data || "";
+                const targetShort = raw.length > 55 ? raw.slice(0, 52) + "..." : raw;
+                const v = (s.verdict || "safe").toLowerCase();
+
+                let verdictLabel = "Safe";
+                let vClass = "safe";
+                if (v === "phishing") {
+                    verdictLabel = "Fake Scam";
+                    vClass = "phishing";
+                } else if (v === "suspicious") {
+                    verdictLabel = "Be Careful";
+                    vClass = "suspicious";
+                }
+
+                return `
+                    <tr>
+                        <td style="font-family:var(--font-mono); font-size:12px;">#${s.id}</td>
+                        <td style="text-transform:uppercase; font-size:11px; font-weight:700;">${s.scan_type}</td>
+                        <td style="font-family:var(--font-mono); font-size:12px;" title="${escapeHtml(raw)}">${escapeHtml(targetShort)}</td>
+                        <td><span class="badge-pill ${vClass}">${verdictLabel}</span></td>
+                        <td style="font-family:var(--font-mono); font-weight:700;">${s.risk_score} / 100</td>
+                        <td style="font-size:12px; color:var(--text-secondary);">${(s.created_at || "").slice(0, 16).replace("T", " ")}</td>
+                        <td style="text-align: right;">
+                            <a href="/result?id=${s.id}" class="btn-table-action">View Result &rarr;</a>
+                        </td>
+
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function escapeHtml(str) {
+            return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        document.addEventListener("DOMContentLoaded", initPage);
+    </script>
+</body>
+</html>

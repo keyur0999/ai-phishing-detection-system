@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard | Phishing Detection & Protection</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .landing-hero {
+            padding: 60px 0 50px;
+        }
+
+        .hero-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .landing-auth-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-md);
+            padding: 28px;
+        }
+
+        .auth-card-top {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .auth-card-top h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .auth-card-top p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .auth-tabs-nav {
+            display: flex;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 3px;
+            margin-bottom: 18px;
+        }
+
+        .auth-tab-btn {
+            flex: 1;
+            padding: 7px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .auth-tab-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .auth-portal-form {
+            display: none;
+        }
+
+        .auth-portal-form.active {
+            display: block;
+        }
+
+        .auth-input-group {
+            margin-bottom: 14px;
+        }
+
+        .auth-input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        .auth-input:focus {
+            border-color: var(--border-focus);
+        }
+
+        .auth-submit-btn-full {
+            width: 100%;
+            padding: 11px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-sm);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .auth-submit-btn-full:hover {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        }
+
+        .auth-submit-btn-full:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-submit-btn-full:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+
+        .portal-alert {
+            display: none;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            margin-bottom: 14px;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .portal-alert.success {
+            background: var(--success-subtle);
+            border: 1px solid var(--success-border);
+            color: var(--success-text);
+        }
+
+        .portal-alert.error {
+            background: var(--danger-subtle);
+            border: 1px solid var(--danger-border);
+            color: var(--danger-text);
+        }
+
+        .logged-in-profile-box {
+            display: none;
+            text-align: center;
+            padding: 12px 6px;
+        }
+
+        .user-avatar-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(96, 165, 250, 0.15);
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin: 0 auto 12px;
+        }
+
+        @media (max-width: 860px) {
+            .hero-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard</span>
+            </a>
+
+            <nav class="nav-links" id="landingNavLinks">
+                <a href="#overview">Overview</a>
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="/reports">Reports</a>
+                <a href="/admin" id="landingNavAdminLink" style="display: none; font-weight: 600;">Admin</a>
+                <a href="/dashboard" class="nav-button">Open Scanner</a>
+            </nav>
+
+            <div id="landingNavAuth" style="display: flex; align-items: center; gap: 10px;">
+                <a href="/login" class="secondary-button" id="navBtnSignIn">
+                    Sign In
+                </a>
+                <div id="navUserBadgeLanding" style="display: none; align-items: center; gap: 8px;">
+                    <span style="font-size: 13px; color: #60a5fa; font-weight: 600;" id="landingUsernameDisplay">User</span>
+                    <a href="/dashboard" class="primary-button" style="padding: 6px 12px; font-size: 12px;">Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- ================= HERO WITH SIGN-IN CARD ================= -->
+        <section class="landing-hero" id="overview">
+            <div class="container hero-layout">
+                
+                <!-- Left Hero Information -->
+                <div class="hero-left">
+                    <h1 style="font-size: clamp(30px, 3.8vw, 42px); font-weight: 800; line-height: 1.2; margin-bottom: 16px;">
+                        Instant protection against fake emails, scam links, and QR codes.
+                    </h1>
+
+                    <p style="font-size: 16px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; max-width: 520px;">
+                        PhishGuard checks messages and websites before you click. It protects your organization and employees from account takeover and online fraud.
+                    </p>
+
+
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <a href="/dashboard" class="primary-button">
+                            Open Scanner
+                        </a>
+                        <a href="#how-it-works" class="secondary-button">
+                            How It Works
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Hero: Sign-In / Create Account Card -->
+                <div class="hero-right">
+                    <div class="landing-auth-card" id="landingAuthCard">
+                        
+                        <!-- Unauthenticated Form View -->
+                        <div id="authFormsContainer">
+                            <div class="auth-card-top">
+                                <h3 id="portalTitle">Sign In to PhishGuard</h3>
+                                <p id="portalSub">Access your dashboard and scan history</p>
+                            </div>
+
+                            <div class="auth-tabs-nav">
+                                <button class="auth-tab-btn active" id="tabSignIn" onclick="switchLandingAuth('login')">Sign In</button>
+                                <button class="auth-tab-btn" id="tabSignUp" onclick="switchLandingAuth('register')">Create Account</button>
+                            </div>
+
+                            <div class="portal-alert" id="portalAlert"></div>
+
+                            <!-- LOGIN FORM -->
+                            <form class="auth-portal-form active" id="landingLoginForm">
+                                <div class="auth-input-group">
+                                    <label for="landingLoginId">Username or Email</label>
+                                    <input type="text" id="landingLoginId" class="auth-input" placeholder="Enter username or email" required autocomplete="username" />
+                                </div>
+                                <div class="auth-input-group">
+                                    <label for="landingLoginPass">Password</label>
+                                    <input type="password" id="landingLoginPass" class="auth-input" placeholder="Enter password" required autocomplete="current-password" />
+                                </div>
+                                <button type="submit" class="auth-submit-btn-full" id="btnLandingLogin">
+                                    Sign In
+                                </button>
+                            </form>
+
+                            <!-- REGISTER FORM -->
+                            <form class="auth-portal-form" id="landingRegisterForm">
+                                <div class="auth-input-group">
+                                    <label for="landingRegUser">Username</label>
+                                    <input type="text" id="landingRegUser" class="auth-input" placeholder="Choose a username" required autocomplete="username" />
+                                </div>
+                                <div class="auth-input-group">
+                                    <label for="landingRegEmail">Email Address (Optional)</label>
+                                    <input type="email" id="landingRegEmail" class="auth-input" placeholder="name@example.com" autocomplete="email" />
+                                </div>
+                                <div class="auth-input-group">
+                                    <label for="landingRegPass">Password (Min. 6 chars)</label>
+                                    <input type="password" id="landingRegPass" class="auth-input" placeholder="Choose password" required autocomplete="new-password" />
+                                </div>
+                                <button type="submit" class="auth-submit-btn-full" id="btnLandingRegister">
+                                    Create Account
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Authenticated User Profile Box -->
+                        <div class="logged-in-profile-box" id="loggedInProfileBox">
+                            <div class="user-avatar-circle" id="userAvatarIcon">👤</div>
+                            <h4 id="profileWelcomeUser" style="font-size: 16px; margin-bottom: 6px;">Welcome back!</h4>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px;">
+                                You are signed in. Your personal scans and threat reports are saved to your account.
+                            </p>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <a href="/dashboard" class="primary-button" style="justify-content: center;">
+                                    Go to Scanner Dashboard
+                                </a>
+                                <button onclick="logoutFromLanding()" class="secondary-button" style="justify-content: center; color: #f87171;">
+                                    Sign Out
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= FEATURES ================= -->
+        <section class="section-clean" id="features">
+            <div class="container">
+                <div class="section-clean-header">
+                    <h2>Core Capabilities</h2>
+                    <p>Designed to help users quickly evaluate suspicious links and communication.</p>
+                </div>
+
+                <div class="clean-cards-grid">
+                    <div class="clean-card">
+                        <h3>URL & Link Inspection</h3>
+                        <p>Evaluates web destinations against typosquatting patterns, misleading subdomains, suspicious TLDs, and known malicious databases.</p>
+                    </div>
+
+                    <div class="clean-card">
+                        <h3>Email Text Analysis</h3>
+                        <p>Analyzes messages for artificial urgency, credential-harvesting triggers, and automatically extracts and checks any embedded links.</p>
+                    </div>
+
+                    <div class="clean-card">
+                        <h3>QR Code Verification</h3>
+                        <p>Decodes QR codes via camera or image upload so you can review where the code actually leads before loading the page on your device.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= HOW IT WORKS ================= -->
+        <section class="section-clean" id="how-it-works">
+            <div class="container">
+                <div class="section-clean-header">
+                    <h2>How It Works</h2>
+                    <p>A simple three-step process to verify suspicious communication.</p>
+                </div>
+
+                <div class="clean-cards-grid">
+                    <div class="clean-card">
+                        <h3>1. Paste or Scan</h3>
+                        <p>Provide a URL, message content, or QR code that you want to check for potential deception.</p>
+                    </div>
+
+                    <div class="clean-card">
+                        <h3>2. Multi-Layer Analysis</h3>
+                        <p>The system evaluates structural heuristics, runs local classifier inference, and queries VirusTotal threat feeds.</p>
+                    </div>
+
+                    <div class="clean-card">
+                        <h3>3. Clear Findings</h3>
+                        <p>Get a direct verdict (Safe, Suspicious, or Phishing), a risk score from 0 to 100, and a concise list of detected anomalies.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-container">
+            <div>
+                <strong>PhishGuard</strong> — Phishing Detection & Threat Verification
+            </div>
+            <div class="footer-links">
+                <a href="/dashboard">Scanner</a>
+                <a href="/login">Sign In</a>
+                <a href="/reports">Threat Reports</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= SCRIPT ================= -->
+    <script>
+        const API_URL = (window.location.protocol.startsWith("http") && (window.location.port === "5000" || window.location.port === "5001"))
+            ? ""
+            : "http://127.0.0.1:5000";
+
+        function switchLandingAuth(mode) {
+            const loginForm = document.getElementById("landingLoginForm");
+            const regForm = document.getElementById("landingRegisterForm");
+            const tabLogin = document.getElementById("tabSignIn");
+            const tabReg = document.getElementById("tabSignUp");
+            const title = document.getElementById("portalTitle");
+            const sub = document.getElementById("portalSub");
+            const alertBox = document.getElementById("portalAlert");
+
+            alertBox.className = "portal-alert";
+            alertBox.style.display = "none";
+
+            if (mode === "register") {
+                loginForm.classList.remove("active");
+                regForm.classList.add("active");
+                tabLogin.classList.remove("active");
+                tabReg.classList.add("active");
+                title.textContent = "Create Account";
+                sub.textContent = "Sign up to track your personal scan history";
+                document.getElementById("landingRegUser").focus();
+            } else {
+                regForm.classList.remove("active");
+                loginForm.classList.add("active");
+                tabReg.classList.remove("active");
+                tabLogin.classList.add("active");
+                title.textContent = "Sign In to PhishGuard";
+                sub.textContent = "Access your dashboard and scan history";
+                document.getElementById("landingLoginId").focus();
+            }
+        }
+
+        function showPortalAlert(msg, isSuccess = false) {
+            const alertBox = document.getElementById("portalAlert");
+            alertBox.className = isSuccess ? "portal-alert success" : "portal-alert error";
+            alertBox.textContent = msg;
+            alertBox.style.display = "flex";
+        }
+
+        document.getElementById("landingLoginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("btnLandingLogin");
+            const identifier = document.getElementById("landingLoginId").value.trim();
+            const password = document.getElementById("landingLoginPass").value;
+
+            btn.disabled = true;
+            btn.textContent = "Signing In...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ identifier, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showPortalAlert("Login successful. Opening dashboard...", true);
+                    localStorage.setItem("phishguard_user", JSON.stringify(data.user));
+                    setTimeout(() => {
+                        window.location.href = "/dashboard";
+                    }, 500);
+                } else {
+                    showPortalAlert(data.message || "Invalid credentials. Please try again.");
+                }
+            } catch (err) {
+                console.error(err);
+                showPortalAlert("Could not reach authentication server.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Sign In";
+            }
+        });
+
+        document.getElementById("landingRegisterForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("btnLandingRegister");
+            const username = document.getElementById("landingRegUser").value.trim();
+            const email = document.getElementById("landingRegEmail").value.trim();
+            const password = document.getElementById("landingRegPass").value;
+
+            btn.disabled = true;
+            btn.textContent = "Creating Account...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ username, email, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showPortalAlert("Account created. Opening dashboard...", true);
+                    localStorage.setItem("phishguard_user", JSON.stringify(data.user));
+                    setTimeout(() => {
+                        window.location.href = "/dashboard";
+                    }, 600);
+                } else {
+                    showPortalAlert(data.message || "Registration failed.");
+                }
+            } catch (err) {
+                console.error(err);
+                showPortalAlert("Could not reach registration server.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Create Account";
+            }
+        });
+
+        async function checkLandingAuth() {
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, { credentials: "include" });
+                const data = await res.json();
+                if (data.authenticated && data.user) {
+                    showLoggedInState(data.user);
+                    return;
+                }
+            } catch (e) {}
+
+            const cached = localStorage.getItem("phishguard_user");
+            if (cached) {
+                try {
+                    const u = JSON.parse(cached);
+                    showLoggedInState(u);
+                } catch (e) {}
+            }
+        }
+
+        function showLoggedInState(user) {
+            document.getElementById("authFormsContainer").style.display = "none";
+            document.getElementById("loggedInProfileBox").style.display = "block";
+            document.getElementById("profileWelcomeUser").textContent = `Welcome back, ${user.username}!`;
+            document.getElementById("navBtnSignIn").style.display = "none";
+            document.getElementById("navUserBadgeLanding").style.display = "flex";
+            const isAdmin = user.role === "admin";
+            document.getElementById("landingUsernameDisplay").textContent = isAdmin 
+                ? `Admin: ${user.username}` 
+                : user.username;
+            const adminLink = document.getElementById("landingNavAdminLink");
+            if (adminLink) adminLink.style.display = isAdmin ? "inline-flex" : "none";
+        }
+
+        async function logoutFromLanding() {
+            try {
+                await fetch(`${API_URL}/api/auth/logout`, { method: "POST", credentials: "include" });
+            } catch (e) {}
+            localStorage.removeItem("phishguard_user");
+            window.location.reload();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            checkLandingAuth();
+        });
+    </script>
+</body>
+</html>

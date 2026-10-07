@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Review | PhishGuard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Unified Navigation (Filtered dynamically by user role) -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/analyst" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard</span>
+            </a>
+
+            <nav class="nav-links" id="navLinks">
+                <a href="/analyst">Analyst Queue</a>
+                <a href="/review" class="active">Review Incident</a>
+                <a href="/history">All Scans</a>
+                <a href="/indicators">Threat Rules</a>
+                <a href="/analyze">Scanner Tool</a>
+            </nav>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="userBadge" class="badge-pill suspicious" style="font-size: 12px;">🛡️ Security Analyst</span>
+                <a href="/analyst" class="secondary-button" style="padding: 6px 12px; font-size: 12px;">&larr; Back to Queue</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 60px;">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1 id="reviewPageTitle">Incident Investigation</h1>
+                <p>Inspect what the employee reported, review automated scan telemetry, and take action.</p>
+            </div>
+            <div class="page-header-actions">
+                <a href="/analyst" class="secondary-button">&larr; Return to Analyst Queue</a>
+            </div>
+        </div>
+
+        <div id="loadingBox" style="text-align: center; padding: 60px 0; color: var(--text-muted);">
+            <p>Loading report data...</p>
+        </div>
+
+        <div id="emptyBox" style="display: none; text-align: center; padding: 40px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+            <h3 style="margin-bottom: 8px;">No Report Selected</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 16px;">Pick a scam report from the Analyst Queue to investigate.</p>
+            <a href="/analyst" class="primary-button">Open Analyst Queue</a>
+        </div>
+
+        <div id="reviewContent" style="display: none;">
+            <!-- Report Meta Grid -->
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <div class="meta-label">Report Number</div>
+                    <div class="meta-value" id="dispReportId" style="font-family: var(--font-mono);">-</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Current Status</div>
+                    <div class="meta-value" id="dispReportStatus">-</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Date Submitted</div>
+                    <div class="meta-value" id="dispReportDate">-</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Associated Scan</div>
+                    <div class="meta-value" id="dispScanLink">-</div>
+                </div>
+            </div>
+
+            <!-- Employee Note Card -->
+            <div class="triage-card" style="margin-bottom: 24px;">
+                <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 6px;">Employee Report Note</div>
+                <p id="dispReportReason" style="font-size: 15px; color: var(--text-primary); font-style: italic; margin-bottom: 12px;">-</p>
+                <div style="font-size: 12px; color: var(--text-secondary);">
+                    Reported by: <span id="dispReporterName" style="color: var(--text-primary); font-weight: 600;">Anonymous</span>
+                </div>
+            </div>
+
+            <!-- Scanned Target & Automated Findings -->
+            <div class="triage-card" style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Scanned Target</div>
+                    <span id="dispVerdictBadge" class="badge-pill neutral">Automated Result</span>
+                </div>
+
+                <div id="dispScanTarget" class="triage-target" style="margin-bottom: 16px;">-</div>
+
+                <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <span style="font-size: 12px; color: var(--text-secondary);">Automated Risk Score:</span>
+                        <span id="dispRiskScore" style="font-family: var(--font-mono); font-weight: 700; margin-left: 6px;">-</span>
+                    </div>
+                    <div id="inspectScanLinkWrapper">
+                        <a id="btnDeepScan" href="#" class="secondary-button" style="padding: 4px 10px; font-size: 12px;">Open Full Scan Breakdown &rarr;</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analyst Actions -->
+            <div class="triage-card" style="border-color: var(--border-medium);">
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 6px;">Analyst Action</h3>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Update report status or immediately block malicious domains company-wide.</p>
+
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+                    <button class="success-button" onclick="updateStatus('resolved')">✓ Resolve Incident (Confirmed Scam)</button>
+                    <button class="secondary-button" onclick="updateStatus('dismissed')">✕ Dismiss (False Alarm)</button>
+                    <button class="secondary-button" onclick="updateStatus('reviewed')">Mark Under Review</button>
+                </div>
+
+                <div style="padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+                    <h4 style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">Block Dangerous Domain Company-Wide</h4>
+                    <div style="display: flex; gap: 10px; max-width: 500px;">
+                        <input type="text" id="quickBlockDomain" class="text-input" placeholder="e.g. fake-login-portal.com" style="flex: 1;">
+                        <button class="danger-button" onclick="quickBlocklistDomain()">🚫 Block Domain</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="nav.js"></script>
+    <script>
+        const API_URL = "";
+        let currentReport = null;
+
+        async function initPage() {
+            await setupRoleNavigation("review");
+
+            const params = new URLSearchParams(window.location.search);
+            const reportId = params.get("id");
+
+            if (reportId) {
+                loadReport(reportId);
+            } else {
+                loadFirstPendingReport();
+            }
+        }
+
+        async function loadReport(id) {
+            try {
+                const res = await fetch(`${API_URL}/api/reports/${id}`);
+                const data = await res.json();
+                if (data.success && data.report) {
+                    currentReport = data.report;
+                    renderReport(data.report);
+                } else {
+                    showEmpty();
+                }
+            } catch (err) {
+                showEmpty();
+            }
+        }
+
+        async function loadFirstPendingReport() {
+            try {
+                const res = await fetch(`${API_URL}/api/reports?limit=1`);
+                const data = await res.json();
+                if (data.success && data.reports && data.reports.length > 0) {
+                    currentReport = data.reports[0];
+                    renderReport(currentReport);
+                } else {
+                    showEmpty();
+                }
+            } catch (err) {
+                showEmpty();
+            }
+        }
+
+        function renderReport(rep) {
+            document.getElementById("loadingBox").style.display = "none";
+            document.getElementById("emptyBox").style.display = "none";
+            document.getElementById("reviewContent").style.display = "block";
+
+            document.getElementById("reviewPageTitle").textContent = `Incident Investigation: Report #${rep.id}`;
+            document.getElementById("dispReportId").textContent = `#${rep.id}`;
+
+            const status = (rep.status || "pending").toLowerCase();
+            const statusBadge = document.getElementById("dispReportStatus");
+            let badgeClass = "suspicious";
+            if (status === "resolved") badgeClass = "safe";
+            if (status === "dismissed") badgeClass = "neutral";
+            statusBadge.innerHTML = `<span class="badge-pill ${badgeClass}">${status.toUpperCase()}</span>`;
+
+            document.getElementById("dispReportDate").textContent = (rep.created_at || "").slice(0, 16).replace("T", " ");
+            document.getElementById("dispReportReason").textContent = `"${rep.reason || "No comment provided."}"`;
+            document.getElementById("dispReporterName").textContent = rep.username || `User #${rep.user_id || "Anonymous"}`;
+
+            if (rep.scan_id) {
+                document.getElementById("dispScanLink").innerHTML = `<a href="/result?id=${rep.scan_id}" style="color:var(--primary); text-decoration:underline;">Scan #${rep.scan_id}</a>`;
+                document.getElementById("btnDeepScan").href = `/result?id=${rep.scan_id}`;
+            } else {
+                document.getElementById("dispScanLink").textContent = "Direct Target Escalation";
+                document.getElementById("btnDeepScan").style.display = "none";
+            }
+
+            const target = rep.input_data || "No target payload saved";
+            document.getElementById("dispScanTarget").textContent = target;
+
+            try {
+                let d = target.replace(/^https?:\/\//i, "").split("/")[0].split(":")[0];
+                if (d && d.includes(".")) {
+                    document.getElementById("quickBlockDomain").value = d;
+                }
+            } catch (e) {}
+
+            const verdict = (rep.verdict || "unknown").toLowerCase();
+            const vBadge = document.getElementById("dispVerdictBadge");
+            vBadge.className = `badge-pill ${verdict === "phishing" ? "phishing" : (verdict === "suspicious" ? "suspicious" : "safe")}`;
+            vBadge.textContent = verdict === "phishing" ? "FAKE SCAM" : (verdict === "suspicious" ? "SUSPICIOUS" : "SAFE");
+
+            document.getElementById("dispRiskScore").textContent = rep.risk_score !== undefined ? `${rep.risk_score} / 100` : "N/A";
+        }
+
+        function showEmpty() {
+            document.getElementById("loadingBox").style.display = "none";
+            document.getElementById("reviewContent").style.display = "none";
+            document.getElementById("emptyBox").style.display = "block";
+        }
+
+        async function updateStatus(newStatus) {
+            if (!currentReport) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/reports/${currentReport.id}/status`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(`Report status updated to '${newStatus}'.`);
+                    currentReport.status = newStatus;
+                    renderReport(currentReport);
+                } else {
+                    alert("Update failed: " + data.message);
+                }
+            } catch (err) {
+                alert("Network error: " + err.message);
+            }
+        }
+
+        async function quickBlocklistDomain() {
+            const domain = document.getElementById("quickBlockDomain").value.trim();
+            if (!domain) {
+                alert("Enter a domain to block.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/blocklist`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ domain: domain, reason: `Blocked during Review #${currentReport.id}` })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(`Domain '${domain}' added to blocklist.`);
+                } else {
+                    alert("Blocklist update failed: " + data.message);
+                }
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", initPage);
+    </script>
+</body>
+</html>

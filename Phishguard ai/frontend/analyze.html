@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan for Scams | PhishGuard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="html5-qrcode.min.js"></script>
+</head>
+<body>
+
+    <!-- Unified Navigation (Filtered dynamically by user role) -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/dashboard" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard</span>
+            </a>
+
+            <nav class="nav-links" id="navLinks">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/analyze" class="active">Scan Message / URL</a>
+                <a href="/history">My Scan History</a>
+            </nav>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="userBadge" class="badge-pill neutral" style="font-size: 12px;">👤 Loading...</span>
+                <a href="/history" class="secondary-button" style="padding: 6px 12px; font-size: 12px;">Past Scans</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 60px;">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Scan a Message, Link, or QR Code</h1>
+                <p>Paste any suspicious message or link below to quickly find out if it is safe or a fake scam.</p>
+            </div>
+        </div>
+
+        <!-- Scanner Card -->
+        <div class="scanner-wrapper">
+            <div class="scanner-header">
+                <div class="scanner-tabs">
+                    <button class="tab-btn active" id="tabBtnEmail" onclick="setTab('email')">Email / Message</button>
+                    <button class="tab-btn" id="tabBtnUrl" onclick="setTab('url')">Web Link (URL)</button>
+                    <button class="tab-btn" id="tabBtnQr" onclick="setTab('qr')">QR Code</button>
+                </div>
+            </div>
+
+            <div class="scanner-body">
+                <!-- 1. Email Message Tab -->
+                <div id="panelEmail" class="scanner-tab-content active">
+                    <div class="input-group">
+                        <label class="input-label" for="emailSubject">Email Subject (Optional)</label>
+                        <input type="text" id="emailSubject" class="text-input" placeholder="e.g. Urgent: Your account has been suspended">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="emailBody">Message Body</label>
+                        <textarea id="emailBody" class="textarea-input" rows="6" placeholder="Paste the text of the email, SMS, or message here..."></textarea>
+                    </div>
+                    <div class="scanner-actions">
+                        <button class="primary-button" id="btnScanEmail" onclick="runEmailScan()">Check Message for Scams</button>
+                    </div>
+                </div>
+
+                <!-- 2. Web URL Tab -->
+                <div id="panelUrl" class="scanner-tab-content" style="display: none;">
+                    <div class="input-group">
+                        <label class="input-label" for="urlInput">Website Link</label>
+                        <input type="text" id="urlInput" class="text-input" placeholder="https://example.com/login-verify">
+                    </div>
+                    <div class="scanner-actions">
+                        <button class="primary-button" id="btnScanUrl" onclick="runUrlScan()">Check Web Link</button>
+                    </div>
+                </div>
+
+                <!-- 3. QR Code Tab -->
+                <div id="panelQr" class="scanner-tab-content" style="display: none;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 14px;">
+                        <button class="secondary-button" id="modeBtnUpload" onclick="setQrMode('upload')">Upload QR Image</button>
+                        <button class="secondary-button" id="modeBtnCamera" onclick="setQrMode('camera')">Use Camera</button>
+                        <button class="secondary-button" id="modeBtnManual" onclick="setQrMode('manual')">Paste Link</button>
+                    </div>
+
+                    <div id="qrPanelUpload">
+                        <input type="file" id="qrFileInput" accept="image/*" class="text-input" onchange="handleQrUpload(event)">
+                        <div id="qrPreviewWrap" style="display:none; margin-top:14px;">
+                            <img id="qrPreviewImg" style="max-height: 180px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);" alt="QR preview">
+                        </div>
+                    </div>
+
+                    <div id="qrPanelCamera" style="display:none;">
+                        <div id="qrReader" style="width: 100%; max-width: 380px; margin-bottom: 12px;"></div>
+                        <button class="secondary-button" id="btnStartCam" onclick="startCamera()">Start Camera</button>
+                        <button class="secondary-button" id="btnStopCam" onclick="stopCamera()" style="display:none;">Stop Camera</button>
+                    </div>
+
+                    <div id="qrPanelManual" style="display:none;">
+                        <div class="input-group">
+                            <label class="input-label" for="qrManualInput">QR Code Destination</label>
+                            <input type="text" id="qrManualInput" class="text-input" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <div class="scanner-actions" style="margin-top: 16px;">
+                        <button class="primary-button" id="btnScanQr" onclick="runQrScan()">Check QR Code</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inline Scan Result Card (Shown after scanning) -->
+        <div id="scanResultBox" class="triage-card" style="display: none; margin-top: 24px; border-color: var(--border-medium);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                <div>
+                    <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">Security Check Verdict</span>
+                    <span id="resVerdictBadge" class="badge-pill" style="font-size: 14px; padding: 6px 14px;">Evaluating...</span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 12px; color: var(--text-secondary);">Risk Level</span>
+                    <div style="font-size: 24px; font-weight: 700; font-family: var(--font-mono);" id="resScoreNum">0 / 100</div>
+                </div>
+            </div>
+
+            <!-- Risk meter bar -->
+            <div class="chart-bar-track" style="height: 8px; margin-bottom: 14px;">
+                <div id="resScoreBar" class="chart-bar-fill" style="width: 0%; background: var(--success);"></div>
+            </div>
+
+            <p id="resExplanation" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;"></p>
+
+            <div style="margin-bottom: 16px;">
+                <h4 style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px;">Why was this flagged?</h4>
+                <ul id="resReasonsList" class="reasons-list">
+                    <li class="clean-item">Clean: No suspicious words or deceptive links found.</li>
+                </ul>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+                <a id="resDeepLink" href="#" class="primary-button">View Detailed Report &rarr;</a>
+                <button class="secondary-button" onclick="toggleQuickReport()" id="btnReportSuspicious">Report to Security Analyst</button>
+            </div>
+
+            <!-- Inline Quick Report Drawer -->
+            <div id="quickReportDrawer" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border-medium);">
+                <div class="input-group">
+                    <label class="input-label" for="quickReportReason">Describe why this looks like a scam</label>
+                    <textarea id="quickReportReason" class="textarea-input" rows="2" placeholder="e.g. Sender asks for password or bank details, suspicious link, unexpected invoice..."></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="secondary-button" onclick="toggleQuickReport()">Cancel</button>
+                    <button class="danger-button" id="btnSubmitQuickReport" onclick="submitQuickReport()">Send to Analyst Queue</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+    <script src="nav.js"></script>
+    <script>
+        const API_URL = "";
+        let decodedQrText = "";
+        let qrScannerInstance = null;
+        let lastScanId = null;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await setupRoleNavigation("analyze");
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get("tab");
+            if (tab === "url" || tab === "email" || tab === "qr") {
+                setTab(tab);
+            }
+        });
+
+        function setTab(name) {
+            ["email", "url", "qr"].forEach(t => {
+                const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                const panel = document.getElementById(`panel${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if (btn) btn.classList.toggle("active", t === name);
+                if (panel) panel.style.display = (t === name) ? "block" : "none";
+            });
+            document.getElementById("scanResultBox").style.display = "none";
+        }
+
+        async function runEmailScan() {
+            const subject = document.getElementById("emailSubject").value.trim();
+            const body = document.getElementById("emailBody").value.trim();
+            if (!subject && !body) {
+                alert("Please enter or paste message text to check.");
+                return;
+            }
+
+            const btn = document.getElementById("btnScanEmail");
+            btn.disabled = true;
+            btn.textContent = "Checking...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/scan/email`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ subject, body })
+                });
+                const data = await res.json();
+                renderResult(data);
+            } catch (err) {
+                alert("Scan failed: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Check Message for Scams";
+            }
+        }
+
+        async function runUrlScan() {
+            const url = document.getElementById("urlInput").value.trim();
+            if (!url) {
+                alert("Please enter a web link (URL) to check.");
+                return;
+            }
+
+            const btn = document.getElementById("btnScanUrl");
+            btn.disabled = true;
+            btn.textContent = "Checking...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/scan/url`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url })
+                });
+                const data = await res.json();
+                renderResult(data);
+            } catch (err) {
+                alert("Scan failed: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Check Web Link";
+            }
+        }
+
+        function setQrMode(mode) {
+            document.getElementById("qrPanelUpload").style.display = mode === "upload" ? "block" : "none";
+            document.getElementById("qrPanelCamera").style.display = mode === "camera" ? "block" : "none";
+            document.getElementById("qrPanelManual").style.display = mode === "manual" ? "block" : "none";
+        }
+
+        async function handleQrUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const wrap = document.getElementById("qrPreviewWrap");
+            const img = document.getElementById("qrPreviewImg");
+            img.src = URL.createObjectURL(file);
+            wrap.style.display = "block";
+
+            try {
+                const html5QrCode = new Html5Qrcode("qrReader");
+                const decoded = await html5QrCode.scanFile(file, true);
+                decodedQrText = decoded;
+                document.getElementById("qrManualInput").value = decoded;
+                alert("QR Code decoded successfully: " + decoded);
+            } catch (err) {
+                decodedQrText = prompt("Could not auto-read QR image. Enter link if visible:") || "";
+                if (decodedQrText) document.getElementById("qrManualInput").value = decodedQrText;
+            }
+        }
+
+        async function startCamera() {
+            try {
+                qrScannerInstance = new Html5Qrcode("qrReader");
+                await qrScannerInstance.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    (decodedText) => {
+                        decodedQrText = decodedText;
+                        document.getElementById("qrManualInput").value = decodedText;
+                        stopCamera();
+                        alert("QR Code scanned: " + decodedText);
+                    },
+                    () => {}
+                );
+                document.getElementById("btnStartCam").style.display = "none";
+                document.getElementById("btnStopCam").style.display = "inline-flex";
+            } catch (e) {
+                alert("Camera error: " + e.message);
+            }
+        }
+
+        async function stopCamera() {
+            if (qrScannerInstance) {
+                try { await qrScannerInstance.stop(); } catch(e) {}
+                qrScannerInstance = null;
+            }
+            document.getElementById("btnStartCam").style.display = "inline-flex";
+            document.getElementById("btnStopCam").style.display = "none";
+        }
+
+        async function runQrScan() {
+            const url = document.getElementById("qrManualInput").value.trim() || decodedQrText;
+            if (!url) {
+                alert("Please scan a QR code or enter its web destination.");
+                return;
+            }
+
+            const btn = document.getElementById("btnScanQr");
+            btn.disabled = true;
+            btn.textContent = "Checking...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/scan/qr`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url })
+                });
+                const data = await res.json();
+                renderResult(data);
+            } catch (err) {
+                alert("Scan failed: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Check QR Code";
+            }
+        }
+
+        function renderResult(data) {
+            const box = document.getElementById("scanResultBox");
+            box.style.display = "block";
+            lastScanId = data.scan_id;
+
+            const score = data.risk_score || 0;
+            document.getElementById("resScoreNum").textContent = `${score} / 100`;
+
+            const scoreBar = document.getElementById("resScoreBar");
+            scoreBar.style.width = `${score}%`;
+
+            const verdict = (data.verdict || "safe").toLowerCase();
+            const badge = document.getElementById("resVerdictBadge");
+
+            if (verdict === "phishing") {
+                badge.className = "badge-pill phishing";
+                badge.textContent = "Fake Scam / Phishing";
+                scoreBar.style.background = "var(--danger)";
+                document.getElementById("resExplanation").textContent = "Do not open this link or reply to this message. It is trying to steal your password or money.";
+            } else if (verdict === "suspicious") {
+                badge.className = "badge-pill suspicious";
+                badge.textContent = "Be Careful / Suspicious";
+                scoreBar.style.background = "var(--warning)";
+                document.getElementById("resExplanation").textContent = "This message contains unusual links or urgent demands. Verify with the sender before taking action.";
+            } else {
+                badge.className = "badge-pill safe";
+                badge.textContent = "Safe & Clean";
+                scoreBar.style.background = "var(--success)";
+                document.getElementById("resExplanation").textContent = "No scam words, deceptive links, or blacklisted websites were detected.";
+            }
+
+            const rList = document.getElementById("resReasonsList");
+            const reasons = Array.isArray(data.reasons) ? data.reasons : [];
+            if (reasons.length === 0) {
+                rList.innerHTML = `<li class="clean-item">Verified clean: No deceptive links or suspicious requests found.</li>`;
+            } else {
+                rList.innerHTML = reasons.map(r => `<li>${escapeHtml(r)}</li>`).join("");
+            }
+
+            const deepLink = document.getElementById("resDeepLink");
+            deepLink.href = `/result?id=${data.scan_id}`;
+
+            box.scrollIntoView({ behavior: "smooth" });
+        }
+
+        function toggleQuickReport() {
+            const drawer = document.getElementById("quickReportDrawer");
+            drawer.style.display = (drawer.style.display === "none") ? "block" : "none";
+        }
+
+        async function submitQuickReport() {
+            if (!lastScanId) return;
+            const reason = document.getElementById("quickReportReason").value.trim();
+            if (!reason) {
+                alert("Please describe why this item looks suspicious.");
+                return;
+            }
+
+            const btn = document.getElementById("btnSubmitQuickReport");
+            btn.disabled = true;
+            btn.textContent = "Sending...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/reports`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ scan_id: lastScanId, reason })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("Report successfully submitted to the Security Analyst queue!");
+                    document.getElementById("quickReportDrawer").style.display = "none";
+                    document.getElementById("quickReportReason").value = "";
+                } else {
+                    alert("Submission failed: " + data.message);
+                }
+            } catch (e) {
+                alert("Error sending report: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Send to Analyst Queue";
+            }
+        }
+
+        function escapeHtml(str) {
+            return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+    </script>
+
+</body>
+</html>
