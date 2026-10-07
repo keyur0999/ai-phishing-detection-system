@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Console | PhishGuard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Unified Navigation (Filtered dynamically by user role) -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/admin" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard</span>
+            </a>
+
+            <nav class="nav-links" id="navLinks">
+                <a href="/admin" class="active">Admin Dashboard</a>
+                <a href="/users">Manage Users</a>
+                <a href="/analyst">Analyst Queue</a>
+                <a href="/history">Scan History</a>
+                <a href="/indicators">Blocklist Rules</a>
+            </nav>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="userBadge" class="badge-pill phishing" style="font-size: 12px;">⚙️ Administrator</span>
+                <a href="/login" id="authBtn" class="secondary-button" style="padding: 6px 12px; font-size: 12px;">Sign Out</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 60px;">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Company Administration Console</h1>
+                <p>System overview, company user accounts, and security blocklist controls.</p>
+            </div>
+            <div class="page-header-actions">
+                <a href="/users" class="primary-button">Manage Employees & Users</a>
+            </div>
+        </div>
+
+        <!-- High-level Company Metrics -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-num" id="totalUsersNum">0</div>
+                <div class="stat-label">Registered Accounts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="statAdminScans">0</div>
+                <div class="stat-label">Company Scans Run</div>
+            </div>
+            <div class="stat-card stat-phishing">
+                <div class="stat-num" id="statAdminPhish">0</div>
+                <div class="stat-label">Scams Neutralized</div>
+            </div>
+            <div class="stat-card stat-suspicious">
+                <div class="stat-num" id="statAdminReports">0</div>
+                <div class="stat-label">Pending Scam Reports</div>
+            </div>
+        </div>
+
+        <!-- System & Intelligence Status -->
+        <div class="meta-grid">
+            <div class="meta-item">
+                <div class="meta-label">VirusTotal Threat Intelligence</div>
+                <div class="meta-value" id="vtStatusValue">Active (70+ Vendors)</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Local Detection Engine</div>
+                <div class="meta-value">Operational</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Database Store</div>
+                <div class="meta-value">SQLite (phishguard.db)</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Active Blocked Domains</div>
+                <div class="meta-value" id="statAdminBlocked">0</div>
+            </div>
+        </div>
+
+        <!-- Company Domain Blocklist -->
+        <div class="triage-card" style="margin-bottom: 32px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <h3 style="font-size: 15px; font-weight: 600;">Company Domain Blocklist</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Blocked domains are automatically flagged as dangerous scams for all employees.</p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 16px; max-width: 650px;">
+                <input type="text" id="addBlockDomainInput" class="text-input" placeholder="e.g. fake-login-domain.com" style="flex: 1;">
+                <input type="text" id="addBlockReasonInput" class="text-input" placeholder="Reason (e.g. Credential Harvesting Scam)" style="flex: 1;">
+                <button class="primary-button" onclick="addBlocklistEntry()">Add to Blocklist</button>
+            </div>
+
+            <div class="table-wrap">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">ID</th>
+                            <th>Blocked Domain</th>
+                            <th>Reason</th>
+                            <th style="width: 140px;">Added On</th>
+                            <th style="width: 90px; text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="blocklistTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">Loading blocked domains...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Logins Log -->
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div>
+                    <h3 style="font-size: 15px; font-weight: 600;">Recent Sign-In Activity</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Audit log of recent user logins across the organization.</p>
+                </div>
+            </div>
+
+            <div class="table-wrap" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Log #</th>
+                            <th>User</th>
+                            <th style="width: 130px;">Account Role</th>
+                            <th style="width: 150px;">IP Address</th>
+                            <th style="width: 180px;">Login Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loginsTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 25px; color: var(--text-muted);">Loading sign-in activity...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="nav.js"></script>
+    <script>
+        const API_URL = "";
+
+        async function initPage() {
+            await setupRoleNavigation("admin");
+            await loadAdminData();
+        }
+
+        async function loadAdminData() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/overview`);
+                const data = await res.json();
+                if (data.success && data.overview) {
+                    const o = data.overview;
+                    document.getElementById("totalUsersNum").textContent = o.users_count || "0";
+                    document.getElementById("statAdminScans").textContent = o.scans_count || "0";
+                    document.getElementById("statAdminPhish").textContent = o.phishing_count || "0";
+                    document.getElementById("statAdminReports").textContent = o.reports_count || "0";
+                    document.getElementById("statAdminBlocked").textContent = o.blocklist_count || "0";
+
+                    if (o.virustotal && o.virustotal.configured) {
+                        document.getElementById("vtStatusValue").textContent = `Active (${o.virustotal.cache_entries || 0} cached)`;
+                    }
+                }
+            } catch (err) {
+                console.error("Overview error", err);
+            }
+
+            loadBlocklist();
+            loadLoginAudits();
+        }
+
+        async function loadBlocklist() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/blocklist`);
+                const data = await res.json();
+                const tbody = document.getElementById("blocklistTableBody");
+
+                if (data.success && data.blocklist) {
+                    if (data.blocklist.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:var(--text-muted);">No custom domains on blocklist.</td></tr>`;
+                        return;
+                    }
+
+                    tbody.innerHTML = data.blocklist.slice(0, 15).map(b => `
+                        <tr>
+                            <td style="font-family:var(--font-mono); font-size:12px;">#${b.id}</td>
+                            <td style="font-family:var(--font-mono); font-size:13px; font-weight:600; color:var(--danger);">${escapeHtml(b.domain)}</td>
+                            <td style="font-size:12px; color:var(--text-secondary);">${escapeHtml(b.reason || "Manual block")}</td>
+                            <td style="font-size:12px;">${(b.created_at || "").slice(0, 16).replace("T", " ")}</td>
+                            <td style="text-align:right;">
+                                <button class="btn-table-danger" onclick="deleteBlockEntry(${b.id})">Remove</button>
+                            </td>
+
+                        </tr>
+                    `).join("");
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadLoginAudits() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/logins?limit=20`);
+                const data = await res.json();
+                const tbody = document.getElementById("loginsTableBody");
+
+                if (data.success && data.logins) {
+                    if (data.logins.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:var(--text-muted);">No login records available.</td></tr>`;
+                        return;
+                    }
+
+                    tbody.innerHTML = data.logins.map(l => {
+                        const r = (l.role || "user").toLowerCase();
+                        let badgeClass = "neutral";
+                        let rText = "EMPLOYEE";
+                        if (r === "admin") { badgeClass = "phishing"; rText = "ADMIN"; }
+                        else if (r === "analyst") { badgeClass = "suspicious"; rText = "ANALYST"; }
+
+                        return `
+                            <tr>
+                                <td style="font-family:var(--font-mono); font-size:12px;">#${l.id}</td>
+                                <td style="font-weight:600; color:var(--text-primary);">${escapeHtml(l.username || "User")}</td>
+                                <td><span class="badge-pill ${badgeClass}">${rText}</span></td>
+                                <td style="font-family:var(--font-mono); font-size:12px;">${escapeHtml(l.ip_address || "127.0.0.1")}</td>
+                                <td style="font-size:12px; color:var(--text-secondary);">${(l.created_at || "").slice(0, 19).replace("T", " ")}</td>
+                            </tr>
+                        `;
+                    }).join("");
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function addBlocklistEntry() {
+            const domain = document.getElementById("addBlockDomainInput").value.trim();
+            const reason = document.getElementById("addBlockReasonInput").value.trim() || "Manual Admin Block";
+
+            if (!domain) {
+                alert("Please enter a domain name.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/blocklist`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ domain, reason })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById("addBlockDomainInput").value = "";
+                    document.getElementById("addBlockReasonInput").value = "";
+                    loadBlocklist();
+                    loadAdminData();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            } catch (err) {
+                alert("Failed: " + err.message);
+            }
+        }
+
+        async function deleteBlockEntry(id) {
+            if (!confirm("Remove domain from blocklist?")) return;
+            try {
+                const res = await fetch(`${API_URL}/api/admin/blocklist/${id}`, { method: "DELETE" });
+                const data = await res.json();
+                if (data.success) {
+                    loadBlocklist();
+                    loadAdminData();
+                }
+            } catch (err) {
+                alert("Failed: " + err.message);
+            }
+        }
+
+        function escapeHtml(str) {
+            return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        document.addEventListener("DOMContentLoaded", initPage);
+    </script>
+</body>
+</html>

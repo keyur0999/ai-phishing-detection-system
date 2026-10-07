@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Analyst Queue | PhishGuard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Unified Navigation (Filtered dynamically by user role) -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/analyst" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard</span>
+            </a>
+
+            <nav class="nav-links" id="navLinks">
+                <a href="/analyst" class="active">Analyst Queue</a>
+                <a href="/review">Review Incident</a>
+                <a href="/history">All Scans</a>
+                <a href="/indicators">Threat Rules</a>
+                <a href="/analyze">Scanner Tool</a>
+            </nav>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="userBadge" class="badge-pill suspicious" style="font-size: 12px;">🛡️ Security Analyst</span>
+                <a href="/login" id="authBtn" class="secondary-button" style="padding: 6px 12px; font-size: 12px;">Sign Out</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 60px;">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Security Analyst Queue</h1>
+                <p>Inspect employee-reported scams, investigate flagged links, and confirm phishing threats.</p>
+            </div>
+            <div class="page-header-actions">
+                <button class="secondary-button" onclick="loadDashboard()">Refresh Queue</button>
+            </div>
+        </div>
+
+        <!-- Triage Summary Counters -->
+        <div class="stats-overview">
+            <div class="stat-card stat-phishing">
+                <div class="stat-num" id="statPendingReports">0</div>
+                <div class="stat-label">Reports Awaiting Review</div>
+            </div>
+            <div class="stat-card stat-safe">
+                <div class="stat-num" id="statResolvedReports">0</div>
+                <div class="stat-label">Resolved Reports</div>
+            </div>
+            <div class="stat-card stat-suspicious">
+                <div class="stat-num" id="statHighRiskScans">0</div>
+                <div class="stat-label">Flagged High-Risk Scans</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="statActiveIndicators">0</div>
+                <div class="stat-label">Active Blocklist Rules</div>
+            </div>
+        </div>
+
+        <!-- Employee Reports Queue -->
+        <div style="margin-bottom: 36px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div>
+                    <h2 style="font-size: 16px; font-weight: 600; color: var(--text-primary);">Employee Scam Reports</h2>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Messages and links reported by company users for analyst inspection.</p>
+                </div>
+            </div>
+
+            <div id="reportsContainer">
+                <div style="text-align: center; padding: 40px; color: var(--text-muted); background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                    Loading analyst queue...
+                </div>
+            </div>
+        </div>
+
+        <!-- System Flagged High-Risk Items -->
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div>
+                    <h2 style="font-size: 16px; font-weight: 600; color: var(--text-primary);">Recently Flagged Threats</h2>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Automated scans that scored high risk.</p>
+                </div>
+            </div>
+
+            <div class="table-wrap" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Scan #</th>
+                            <th style="width: 90px;">Type</th>
+                            <th>Target Payload</th>
+                            <th style="width: 130px;">Result</th>
+                            <th style="width: 100px;">Risk Level</th>
+                            <th style="width: 140px;">Date</th>
+                            <th style="width: 100px; text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="highRiskScansBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading threat detections...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="nav.js"></script>
+    <script>
+        const API_URL = "";
+
+        async function initPage() {
+            await setupRoleNavigation("analyst");
+            await loadDashboard();
+        }
+
+        async function loadDashboard() {
+            try {
+                const repRes = await fetch(`${API_URL}/api/reports?limit=50`);
+                const repData = await repRes.json();
+                const reports = repData.success ? repData.reports : [];
+
+                const histRes = await fetch(`${API_URL}/api/history?limit=50`);
+                const histData = await histRes.json();
+                const scans = histData.success ? histData.history : [];
+
+                const indRes = await fetch(`${API_URL}/api/indicators`);
+                const indData = await indRes.json();
+                const totalInds = indData.success ? (indData.indicators.length + indData.blocklist.length) : 0;
+
+                renderMetrics(reports, scans, totalInds);
+                renderReportsQueue(reports);
+                renderHighRiskScans(scans);
+            } catch (err) {
+                console.error("Analyst queue error", err);
+            }
+        }
+
+        function renderMetrics(reports, scans, totalInds) {
+            let pending = 0, resolved = 0;
+            reports.forEach(r => {
+                const s = (r.status || "pending").toLowerCase();
+                if (s === "pending") pending++;
+                else resolved++;
+            });
+            document.getElementById("statPendingReports").textContent = pending;
+            document.getElementById("statResolvedReports").textContent = resolved;
+
+            const highRiskCount = scans.filter(s => (s.risk_score || 0) >= 50 || s.verdict === "phishing").length;
+            document.getElementById("statHighRiskScans").textContent = highRiskCount;
+            document.getElementById("statActiveIndicators").textContent = totalInds;
+        }
+
+        function renderReportsQueue(reports) {
+            const container = document.getElementById("reportsContainer");
+            if (!reports || reports.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 35px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: var(--text-muted);">
+                        No pending scam reports in the queue. All reports have been resolved.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = reports.slice(0, 10).map(r => {
+                const status = (r.status || "pending").toLowerCase();
+                let statusBadge = `<span class="badge-pill suspicious">Needs Review</span>`;
+                if (status === "reviewed") statusBadge = `<span class="badge-pill neutral">Reviewed</span>`;
+                if (status === "resolved") statusBadge = `<span class="badge-pill safe">Resolved</span>`;
+                if (status === "dismissed") statusBadge = `<span class="badge-pill neutral">Dismissed</span>`;
+
+                const target = r.input_data ? (r.input_data.length > 75 ? r.input_data.slice(0, 72) + "..." : r.input_data) : (r.scan_id ? `Scan #${r.scan_id}` : "Target not saved");
+
+                return `
+                    <div class="triage-card">
+                        <div class="triage-card-header">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-family: var(--font-mono); font-weight: 700; font-size: 13px;">Report #${r.id}</span>
+                                ${statusBadge}
+                                <span style="font-size: 12px; color: var(--text-secondary);">${(r.created_at || "").slice(0, 16).replace("T", " ")}</span>
+                            </div>
+                            <div>
+                                <a href="/review?id=${r.id}" class="primary-button" style="padding: 6px 12px; font-size: 12.5px;">Inspect & Resolve &rarr;</a>
+                            </div>
+
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Employee Note:</span>
+                            <p style="font-size: 13px; color: var(--text-primary); margin: 2px 0 0;">"${escapeHtml(r.reason || "No comment provided")}"</p>
+                        </div>
+                        <div class="triage-target" style="font-size: 12px;">
+                            ${escapeHtml(target)}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderHighRiskScans(scans) {
+            const highRisk = scans.filter(s => (s.risk_score || 0) >= 50 || s.verdict === "phishing");
+            const tbody = document.getElementById("highRiskScansBody");
+
+            if (!highRisk || highRisk.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:25px; color:var(--text-muted);">No high-risk threats detected recently.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = highRisk.slice(0, 8).map(s => {
+                const raw = s.input_data || "";
+                const targetShort = raw.length > 55 ? raw.slice(0, 52) + "..." : raw;
+                const v = (s.verdict || "phishing").toLowerCase();
+                const vBadge = v === "phishing" ? `<span class="badge-pill phishing">Fake Scam</span>` : `<span class="badge-pill suspicious">Suspicious</span>`;
+
+                return `
+                    <tr>
+                        <td style="font-family:var(--font-mono); font-size:12px;">#${s.id}</td>
+                        <td style="text-transform:uppercase; font-size:11px; font-weight:700;">${s.scan_type}</td>
+                        <td style="font-family:var(--font-mono); font-size:12px;" title="${escapeHtml(raw)}">${escapeHtml(targetShort)}</td>
+                        <td>${vBadge}</td>
+                        <td style="font-family:var(--font-mono); font-weight:700; color:var(--danger);">${s.risk_score} / 100</td>
+                        <td style="font-size:12px; color:var(--text-secondary);">${(s.created_at || "").slice(0, 16).replace("T", " ")}</td>
+                        <td style="text-align: right;">
+                            <a href="/result?id=${s.id}" class="btn-table-action">Inspect &rarr;</a>
+                        </td>
+
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function escapeHtml(str) {
+            return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        document.addEventListener("DOMContentLoaded", initPage);
+    </script>
+</body>
+</html>

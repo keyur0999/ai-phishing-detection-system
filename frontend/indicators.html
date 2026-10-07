@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threat Indicators | PhishGuard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Unified Minimalist Navigation -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/dashboard" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard</span>
+            </a>
+
+            <nav class="nav-links" id="navLinks">
+                <!-- Dynamically populated by nav.js -->
+            </nav>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="userBadge" class="badge-pill neutral" style="font-size: 12px;">👤 Loading...</span>
+                <a href="/login" id="authBtn" class="secondary-button" style="padding: 6px 12px; font-size: 12px;">Sign Out</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 60px;">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Threat Indicators & Rules</h1>
+                <p>Knowledge base of known deceptive URL patterns, urgency keywords, and blocklisted domains used by the detection engine.</p>
+            </div>
+            <div class="page-header-actions">
+                <button class="primary-button" onclick="toggleAddModal()">+ Add Indicator</button>
+            </div>
+        </div>
+
+        <!-- Metric Summary -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-num" id="statTotalInd">0</div>
+                <div class="stat-label">Active Indicators</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="statUrlInd">0</div>
+                <div class="stat-label">URL Patterns</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="statEmailInd">0</div>
+                <div class="stat-label">Email Urgency Triggers</div>
+            </div>
+            <div class="stat-card stat-phishing">
+                <div class="stat-num" id="statBlocklistInd">0</div>
+                <div class="stat-label">Blocklisted Domains</div>
+            </div>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="filter-bar">
+            <input type="text" id="searchInput" placeholder="Search patterns or domains..." oninput="filterIndicators()" style="flex: 1; min-width: 200px;">
+            <select id="categoryFilter" onchange="filterIndicators()">
+                <option value="all">All Categories</option>
+                <option value="url">URL Patterns</option>
+                <option value="email">Email Urgency</option>
+                <option value="blocklist">Blocklisted Domains</option>
+            </select>
+        </div>
+
+        <!-- Add Indicator Card (Hidden by default) -->
+        <div id="addIndicatorBox" class="triage-card" style="display: none; margin-bottom: 24px; border-color: var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 style="font-size: 15px; font-weight: 600;">Add New Threat Indicator</h3>
+                <button class="secondary-button" onclick="toggleAddModal()" style="padding: 4px 8px; font-size: 11px;">Close</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                <div>
+                    <label class="input-label">Pattern / String / Domain</label>
+                    <input type="text" id="newIndicatorPattern" class="text-input" placeholder="e.g. verify-account-now or maldomain.ru">
+                </div>
+                <div>
+                    <label class="input-label">Category</label>
+                    <select id="newIndicatorCat" class="select-input">
+                        <option value="url">URL Pattern</option>
+                        <option value="email">Email Urgency</option>
+                        <option value="blocklist">Domain Blocklist</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="input-label">Threat Weight (1-50)</label>
+                    <input type="number" id="newIndicatorWeight" class="text-input" value="20" min="5" max="65">
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="secondary-button" onclick="toggleAddModal()">Cancel</button>
+                <button class="primary-button" id="saveIndicatorBtn" onclick="saveIndicator()">Save Indicator</button>
+            </div>
+        </div>
+
+        <!-- Indicators Table -->
+        <div class="table-wrap" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">ID</th>
+                        <th>Pattern / Value</th>
+                        <th style="width: 140px;">Category</th>
+                        <th style="width: 100px;">Weight</th>
+                        <th style="width: 120px; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="indicatorsTableBody">
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading threat indicators...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = "";
+        let allItems = [];
+
+        async function initPage() {
+            await setupRoleNavigation("indicators");
+            await loadIndicators();
+        }
+
+        async function loadIndicators() {
+            try {
+                const res = await fetch(`${API_URL}/api/indicators`);
+                const data = await res.json();
+                if (data.success) {
+                    const indicators = (data.indicators || []).map(i => ({
+                        id: i.id,
+                        pattern: i.indicator,
+                        category: i.category,
+                        weight: i.weight,
+                        isBlocklist: false
+                    }));
+
+                    const blocklist = (data.blocklist || []).map(b => ({
+                        id: b.id,
+                        pattern: b.domain,
+                        category: "blocklist",
+                        weight: 65,
+                        reason: b.reason,
+                        isBlocklist: true
+                    }));
+
+                    allItems = [...indicators, ...blocklist];
+                    renderStats();
+                    renderTable(allItems);
+                }
+            } catch (err) {
+                console.error("Failed to load indicators", err);
+            }
+        }
+
+        function renderStats() {
+            document.getElementById("statTotalInd").textContent = allItems.length;
+            const urlCount = allItems.filter(i => i.category === "url").length;
+            const emailCount = allItems.filter(i => i.category === "email").length;
+            const blCount = allItems.filter(i => i.isBlocklist || i.category === "blocklist").length;
+
+            document.getElementById("statUrlInd").textContent = urlCount;
+            document.getElementById("statEmailInd").textContent = emailCount;
+            document.getElementById("statBlocklistInd").textContent = blCount;
+        }
+
+        function renderTable(items) {
+            const tbody = document.getElementById("indicatorsTableBody");
+            if (!items || items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:var(--text-muted);">No threat indicators match criteria.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = items.map(item => {
+                let badgeClass = "neutral";
+                let catLabel = item.category.toUpperCase();
+                if (item.category === "url") { badgeClass = "neutral"; }
+                else if (item.category === "email") { badgeClass = "suspicious"; }
+                else if (item.category === "blocklist") { badgeClass = "phishing"; catLabel = "BLOCKLIST"; }
+
+                return `
+                    <tr>
+                        <td style="font-family:var(--font-mono); font-size:12px;">#${item.id}</td>
+                        <td style="font-family:var(--font-mono); font-size:13px; font-weight:600; color:var(--text-primary);">
+                            ${escapeHtml(item.pattern)}
+                            ${item.reason ? `<span style="font-family:var(--font-sans); font-size:11px; color:var(--text-muted); display:block;">Reason: ${escapeHtml(item.reason)}</span>` : ""}
+                        </td>
+                        <td><span class="badge-pill ${badgeClass}">${catLabel}</span></td>
+                        <td style="font-family:var(--font-mono); font-weight:700;">+${item.weight} pts</td>
+                        <td style="text-align: right;">
+                            <button class="btn-table-danger" onclick="deleteIndicator(${item.id}, ${item.isBlocklist})">Delete</button>
+                        </td>
+
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function filterIndicators() {
+            const query = document.getElementById("searchInput").value.trim().toLowerCase();
+            const cat = document.getElementById("categoryFilter").value;
+
+            const filtered = allItems.filter(item => {
+                const matchesQuery = item.pattern.toLowerCase().includes(query) || (item.reason && item.reason.toLowerCase().includes(query));
+                const matchesCat = (cat === "all") || (item.category === cat);
+                return matchesQuery && matchesCat;
+            });
+
+            renderTable(filtered);
+        }
+
+        function toggleAddModal() {
+            const box = document.getElementById("addIndicatorBox");
+            box.style.display = box.style.display === "none" ? "block" : "none";
+        }
+
+        async function saveIndicator() {
+            const pattern = document.getElementById("newIndicatorPattern").value.trim();
+            const category = document.getElementById("newIndicatorCat").value;
+            const weight = parseInt(document.getElementById("newIndicatorWeight").value) || 20;
+
+            if (!pattern) {
+                alert("Please provide a pattern string or domain name.");
+                return;
+            }
+
+            const btn = document.getElementById("saveIndicatorBtn");
+            btn.disabled = true;
+
+            try {
+                if (category === "blocklist") {
+                    const res = await fetch(`${API_URL}/api/admin/blocklist`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ domain: pattern, reason: "Manual threat indicator addition" })
+                    });
+                    const data = await res.json();
+                    if (!data.success) throw new Error(data.message);
+                } else {
+                    const res = await fetch(`${API_URL}/api/indicators`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ indicator: pattern, category: category, weight: weight })
+                    });
+                    const data = await res.json();
+                    if (!data.success) throw new Error(data.message);
+                }
+
+                alert("Threat indicator saved successfully.");
+                document.getElementById("newIndicatorPattern").value = "";
+                toggleAddModal();
+                await loadIndicators();
+            } catch (err) {
+                alert("Failed to save: " + err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function deleteIndicator(id, isBlocklist) {
+            if (!confirm("Are you sure you want to remove this threat indicator?")) return;
+
+            try {
+                const endpoint = isBlocklist ? `${API_URL}/api/admin/blocklist/${id}` : `${API_URL}/api/indicators/${id}`;
+                const res = await fetch(endpoint, { method: "DELETE" });
+                const data = await res.json();
+                if (data.success) {
+                    await loadIndicators();
+                } else {
+                    alert("Delete failed: " + data.message);
+                }
+            } catch (err) {
+                alert("Error deleting indicator: " + err.message);
+            }
+        }
+
+        async function initPage() {
+            await setupRoleNavigation("indicators");
+            await loadIndicators();
+        }
+
+        function escapeHtml(str) {
+            return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        document.addEventListener("DOMContentLoaded", initPage);
+    </script>
+    <script src="nav.js"></script>
+</body>
+</html>
+

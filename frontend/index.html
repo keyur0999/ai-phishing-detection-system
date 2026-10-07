@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard | Phishing Link & Message Scanner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo">
+                <span class="logo-icon">🛡</span>
+                <span>PhishGuard</span>
+            </a>
+
+            <nav class="nav-links" id="navLinks">
+                <a href="#home" class="active">Scanner</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#faq">FAQ</a>
+                <a href="/reports" class="nav-reports-link" id="navReportsLink">
+                    Threat Reports <span class="nav-pending-badge" id="navReportsPendingBadge" style="display: none;">0</span>
+                </a>
+                <div id="navAuthSection" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <a href="/login" class="secondary-button" id="navLoginBtn">
+                        Sign In
+                    </a>
+                    <div id="navUserBadge" style="display: none; align-items: center; gap: 8px;">
+                        <span style="font-size: 13px; color: #60a5fa; font-weight: 600;" id="navUsername">User</span>
+                        <a href="/admin" id="navAdminLink" class="secondary-button" style="display: none;" title="Admin Console">
+                            Admin
+                        </a>
+                        <button id="navLogoutBtn" class="secondary-button" style="color: #f87171;" title="Sign Out">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <button class="menu-button" id="menuButton" aria-label="Open menu">
+                ☰
+            </button>
+        </div>
+    </header>
+
+    <!-- Guest Tip Banner -->
+    <div id="authNoticeBanner" style="display: none; background: #111827; border-bottom: 1px solid var(--border-subtle); padding: 8px 16px; font-size: 13px; text-align: center; color: var(--text-secondary);">
+        <span>Tip:</span>
+        <a href="/login" style="color: #60a5fa; text-decoration: underline; margin-left: 4px;">Sign in</a> to save and access your personal scan history.
+    </div>
+
+    <main>
+        <!-- ================= HERO ================= -->
+        <section class="hero" id="home">
+            <div class="container hero-container">
+                <h1>Detect phishing links, emails, and QR codes</h1>
+                <p class="hero-description">
+                    Check suspicious web addresses, email messages, and QR codes before opening them. Scans combine local pattern detection with live VirusTotal multi-vendor intelligence.
+                </p>
+            </div>
+        </section>
+
+        <!-- ================= SCANNER SECTION ================= -->
+        <section class="detection-section" id="detection">
+            <div class="container">
+
+                <!-- 3 Clear Vector Cards -->
+                <div class="detection-grid">
+                    <div class="detection-card" id="cardUrl" style="cursor: pointer;">
+                        <div class="detection-icon url-color">🔗</div>
+                        <h3>URL & Domain Scanner</h3>
+                        <p>Inspect links for deceptive paths, typosquatting, raw IP hosts, and known malicious redirects.</p>
+                    </div>
+
+                    <div class="detection-card" id="cardEmail" style="cursor: pointer;">
+                        <div class="detection-icon email-color">✉</div>
+                        <h3>Email Content Scanner</h3>
+                        <p>Analyze email subject and body text for urgent credential requests and embedded threat links.</p>
+                    </div>
+
+                    <div class="detection-card" id="cardQr" style="cursor: pointer;">
+                        <div class="detection-icon qr-color">▦</div>
+                        <h3>QR Code Scanner</h3>
+                        <p>Decode QR codes via webcam or image upload to inspect the hidden destination URL.</p>
+                    </div>
+                </div>
+
+                <!-- ================= INTERACTIVE SCANNER CONSOLE ================= -->
+                <div class="scanner-wrapper" id="scannerConsole">
+                    <div class="scanner-header">
+                        <div class="scanner-tabs">
+                            <button class="tab-btn active" data-tab="url">URL Scanner</button>
+                            <button class="tab-btn" data-tab="email">Email Scanner</button>
+                            <button class="tab-btn" data-tab="qr">QR Scanner</button>
+                            <button class="tab-btn" data-tab="history">Scan History</button>
+                        </div>
+                        <div class="backend-status-badge" id="backendStatus">
+                            <span class="status-dot"></span>
+                            <span id="backendStatusText">Engine ready</span>
+                        </div>
+                    </div>
+
+                    <div class="scanner-body">
+                        <!-- URL Scanner Tab -->
+                        <div class="scanner-tab-content active" id="tabContentUrl">
+                            <div class="input-group">
+                                <label for="urlInput">Enter URL to inspect:</label>
+                                <div class="input-row">
+                                    <input type="text" id="urlInput" class="scanner-input" placeholder="e.g. https://example.com/login" />
+                                    <button class="scan-submit-btn" id="submitUrlScan">Scan URL</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email Scanner Tab -->
+                        <div class="scanner-tab-content" id="tabContentEmail">
+                            <div class="input-group">
+                                <label for="emailSubject">Subject line (optional):</label>
+                                <input type="text" id="emailSubject" class="scanner-input" placeholder="e.g. Action required regarding your account" />
+                            </div>
+                            <div class="input-group" style="margin-top: 14px;">
+                                <label for="emailBody">Email body text:</label>
+                                <textarea id="emailBody" class="scanner-textarea" rows="4" placeholder="Paste the message content here..."></textarea>
+                            </div>
+                            <div class="email-actions">
+                                <button class="scan-submit-btn" id="submitEmailScan">Scan Email</button>
+                            </div>
+                        </div>
+
+                        <!-- QR Scanner Tab -->
+                        <div class="scanner-tab-content" id="tabContentQr">
+                            <div class="qr-mode-selector">
+                                <button class="qr-mode-btn active" data-qrmode="camera" id="btnQrModeCamera">Camera Scan</button>
+                                <button class="qr-mode-btn" data-qrmode="file" id="btnQrModeFile">Upload Image</button>
+                                <button class="qr-mode-btn" data-qrmode="manual" id="btnQrModeManual">Enter Decoded URL</button>
+                            </div>
+
+                            <!-- Camera Panel -->
+                            <div class="qr-panel" id="qrCameraPanel">
+                                <div class="qr-camera-wrapper">
+                                    <div id="qrReader" class="qr-video-viewport"></div>
+                                    <div class="qr-camera-placeholder" id="qrCameraPlaceholder">
+                                        <h4>Camera QR Scanner</h4>
+                                        <p>Use your camera to scan a QR code directly.</p>
+                                        <button class="secondary-button" id="btnStartQrCamera" type="button" style="margin-top: 12px;">
+                                            Start Camera
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="qr-camera-controls" id="qrCameraControls" style="display: none; margin-top: 12px;">
+                                    <select id="qrCameraSelect" class="scanner-input" style="max-width: 240px; display: inline-block; margin-right: 8px;"></select>
+                                    <button class="secondary-button" id="btnStopQrCamera" type="button">Stop Camera</button>
+                                </div>
+                                <div class="qr-status-hint" id="qrScanStatus">Point camera toward code to scan.</div>
+                            </div>
+
+                            <!-- File Panel -->
+                            <div class="qr-panel" id="qrFilePanel" style="display: none;">
+                                <div class="qr-dropzone" id="qrDropZone">
+                                    <input type="file" id="qrFileInput" accept="image/*" style="display: none;" />
+                                    <div class="dropzone-content">
+                                        <h4>Drop QR image file here</h4>
+                                        <p>or click to select an image from your computer</p>
+                                    </div>
+                                </div>
+                                <div id="qrFilePreviewContainer" style="display: none; margin-top: 14px;">
+                                    <img id="qrFilePreview" src="" alt="QR Preview" style="max-height: 160px; border-radius: var(--radius-sm);" />
+                                </div>
+                            </div>
+
+                            <!-- Manual URL Input -->
+                            <div class="input-group" style="margin-top: 16px;">
+                                <label for="qrInput">Decoded URL destination:</label>
+                                <div class="input-row">
+                                    <input type="text" id="qrInput" class="scanner-input" placeholder="e.g. https://example.com/verify" />
+                                    <button class="scan-submit-btn" id="submitQrScan" type="button">Scan QR Target</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scan History Tab -->
+                        <div class="scanner-tab-content" id="tabContentHistory">
+                            <div class="stats-overview" id="statsOverview">
+                                <div class="stat-card">
+                                    <div class="stat-num" id="statTotalScans">0</div>
+                                    <div class="stat-label">Total Scans</div>
+                                </div>
+                                <div class="stat-card stat-phishing">
+                                    <div class="stat-num" id="statPhishing">0</div>
+                                    <div class="stat-label">Phishing Threats</div>
+                                </div>
+                                <div class="stat-card stat-suspicious">
+                                    <div class="stat-num" id="statSuspicious">0</div>
+                                    <div class="stat-label">Suspicious</div>
+                                </div>
+                                <div class="stat-card stat-safe">
+                                    <div class="stat-num" id="statSafe">0</div>
+                                    <div class="stat-label">Safe & Clean</div>
+                                </div>
+                            </div>
+
+                            <div class="history-table-container">
+                                <h4>Recent Scans</h4>
+                                <div class="table-wrap">
+                                    <table class="history-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Type</th>
+                                                <th>Target</th>
+                                                <th>Verdict</th>
+                                                <th>Risk Score</th>
+                                                <th>Date & Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="historyTableBody">
+                                            <tr>
+                                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 18px;">
+                                                    No scans recorded yet. Enter a link or email above to begin.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ================= SCAN RESULT BOX ================= -->
+                        <div class="result-container" id="resultContainer" style="display: none;">
+                            <div class="result-header">
+                                <div class="result-title-group">
+                                    <h3>Scan Assessment</h3>
+                                    <span class="scan-id-tag" id="resScanId">Live Scan</span>
+                                </div>
+                                <div class="verdict-badge" id="resVerdictBadge">SAFE</div>
+                            </div>
+
+                            <!-- Engine & VirusTotal Badges -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <div id="resEngineBadge" style="padding: 4px 8px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; background: rgba(96, 165, 250, 0.12); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.25);">
+                                        <span id="resEngineName">Local ML Model</span>
+                                    </div>
+                                    <div id="resVtBadge" style="padding: 4px 8px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; background: var(--success-subtle); color: var(--success-text); border: 1px solid var(--success-border); display: inline-flex;">
+                                        <span id="resVtText">VirusTotal: Live Intel Active</span>
+                                    </div>
+                                </div>
+                                <div id="resConfidenceBadge" style="font-size: 12px; color: var(--text-muted); font-weight: 500;">
+                                    Model Threat Probability: <span id="resConfidenceText" style="color: #60a5fa; font-weight: 600;">--%</span>
+                                </div>
+                            </div>
+
+                            <!-- Explanation Box -->
+                            <div id="resExplanationBox" style="padding: 12px 14px; border-radius: var(--radius-sm); background: var(--bg-input); border: 1px solid var(--border-subtle); font-size: 13px; color: var(--text-secondary); margin-bottom: 14px;">
+                                <div id="resExplanationText">Analysis rationale.</div>
+                            </div>
+
+                            <!-- Risk Score Bar -->
+                            <div class="risk-score-wrapper">
+                                <div class="risk-score-header">
+                                    <span>Calculated Risk Score</span>
+                                    <span class="score-percent" id="resScoreText">0 / 100</span>
+                                </div>
+                                <div class="score-bar-bg">
+                                    <div class="score-bar-fill" id="resScoreBar" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Reasons List -->
+                            <div class="threat-details">
+                                <h4>Findings & Threat Indicators:</h4>
+                                <ul class="reasons-list" id="resReasonsList">
+                                    <li class="clean-item">No malicious patterns or threat indicators detected.</li>
+                                </ul>
+                            </div>
+
+                            <!-- Report Action Bar -->
+                            <div class="result-actions-bar">
+                                <button type="button" class="report-open-btn" id="btnOpenReport">
+                                    Report False Result
+                                </button>
+                            </div>
+
+                            <!-- Report Submission Form -->
+                            <div class="report-box" id="reportBox" style="display: none;">
+                                <div class="report-box-header">
+                                    <div>
+                                        <h4>Submit Threat Report</h4>
+                                        <p style="font-size: 12px; color: var(--text-muted);">Flag this item for administrator review.</p>
+                                    </div>
+                                    <button type="button" class="report-close-btn" id="btnCloseReport" title="Close">✕</button>
+                                </div>
+
+                                <div class="input-group" style="margin-top: 10px;">
+                                    <label for="reportReason">Describe why this item is suspicious:</label>
+                                    <textarea id="reportReason" class="scanner-textarea" rows="3" placeholder="Provide details..."></textarea>
+                                </div>
+
+                                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                                    <button type="button" class="scan-submit-btn" id="btnSubmitReport">Submit</button>
+                                    <button type="button" class="secondary-button" id="btnCancelReport">Cancel</button>
+                                </div>
+                                <div class="report-alert" id="reportAlert" style="display: none;"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= HOW IT WORKS (CLEAN & INFORMATIVE) ================= -->
+        <section class="section-clean" id="how-it-works">
+            <div class="container">
+                <div class="section-clean-header">
+                    <h2>How Threat Analysis Works</h2>
+                    <p>PhishGuard uses a three-layer pipeline to identify dangerous destinations without sending sensitive data to third-party language models.</p>
+                </div>
+
+                <div class="clean-cards-grid">
+                    <div class="clean-card">
+                        <h3>1. Heuristic & Structural Rules</h3>
+                        <p>Checks domain age, typosquatting variants (e.g. paypa1 vs paypal), raw IP addresses, suspicious top-level domains (.xyz, .top), and deceptive URL paths.</p>
+                    </div>
+
+                    <div class="clean-card">
+                        <h3>2. Local Machine Learning</h3>
+                        <p>Evaluates text tokens and lexical distributions using lightweight local scikit-learn models (TF-IDF and character n-grams) running entirely on-device.</p>
+                    </div>
+
+                    <div class="clean-card">
+                        <h3>3. VirusTotal Threat Intelligence</h3>
+                        <p>Cross-references targets with VirusTotal's v3 multi-vendor database to verify findings against 70+ global cybersecurity antivirus and blocklist feeds.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= FAQ SECTION ================= -->
+        <section class="section-clean" id="faq">
+            <div class="container">
+                <div class="section-clean-header">
+                    <h2>Frequently Asked Questions</h2>
+                    <p>Common questions about scanning, privacy, and detection accuracy.</p>
+                </div>
+
+                <div class="clean-cards-grid">
+                    <div class="clean-card">
+                        <h3>Is my email content kept private?</h3>
+                        <p>Yes. Text analysis runs offline via local machine learning models on the server. Your message text is never sent to external AI providers or public APIs.</p>
+                    </div>
+
+                    <div class="clean-card">
+                        <h3>How does VirusTotal verification work?</h3>
+                        <p>When you scan a URL, PhishGuard checks whether any of 70+ global security vendors have cataloged the domain or link as malicious, phishing, or malware.</p>
+                    </div>
+
+                    <div class="clean-card">
+                        <h3>Can I scan QR codes from my phone?</h3>
+                        <p>Yes. The QR scanner supports live camera detection on laptops and smartphones, as well as uploading QR image files directly from your photo library.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer>
+        <div class="container footer-container">
+            <div>
+                <strong>PhishGuard</strong> — Phishing Detection & Threat Verification
+            </div>
+            <div class="footer-links">
+                <a href="#home">Scanner</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="/reports">Reports</a>
+                <a href="/login">Account</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="html5-qrcode.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
