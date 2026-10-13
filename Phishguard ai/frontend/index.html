@@ -28,11 +28,11 @@
                         Sign In
                     </a>
                     <div id="navUserBadge" style="display: none; align-items: center; gap: 8px;">
-                        <span style="font-size: 13px; color: #60a5fa; font-weight: 600;" id="navUsername">User</span>
+                        <span style="font-size: 13px; color: var(--primary); font-weight: 600;" id="navUsername">User</span>
                         <a href="/admin" id="navAdminLink" class="secondary-button" style="display: none;" title="Admin Console">
                             Admin
                         </a>
-                        <button id="navLogoutBtn" class="secondary-button" style="color: #f87171;" title="Sign Out">
+                        <button id="navLogoutBtn" class="secondary-button" style="color: var(--danger);" title="Sign Out">
                             Logout
                         </button>
                     </div>
@@ -46,9 +46,9 @@
     </header>
 
     <!-- Guest Tip Banner -->
-    <div id="authNoticeBanner" style="display: none; background: #111827; border-bottom: 1px solid var(--border-subtle); padding: 8px 16px; font-size: 13px; text-align: center; color: var(--text-secondary);">
+    <div id="authNoticeBanner" style="display: none; background: #eff6ff; border-bottom: 1px solid var(--border-subtle); padding: 8px 16px; font-size: 13px; text-align: center; color: var(--text-secondary);">
         <span>Tip:</span>
-        <a href="/login" style="color: #60a5fa; text-decoration: underline; margin-left: 4px;">Sign in</a> to save and access your personal scan history.
+        <a href="/login" style="color: var(--primary); text-decoration: underline; margin-left: 4px;">Sign in</a> to save and access your personal scan history.
     </div>
 
     <main>
@@ -240,7 +240,7 @@
                             <!-- Engine & VirusTotal Badges -->
                             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
                                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                    <div id="resEngineBadge" style="padding: 4px 8px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; background: rgba(96, 165, 250, 0.12); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.25);">
+                                    <div id="resEngineBadge" style="padding: 4px 8px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe;">
                                         <span id="resEngineName">Local ML Model</span>
                                     </div>
                                     <div id="resVtBadge" style="padding: 4px 8px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; background: var(--success-subtle); color: var(--success-text); border: 1px solid var(--success-border); display: inline-flex;">
@@ -248,7 +248,7 @@
                                     </div>
                                 </div>
                                 <div id="resConfidenceBadge" style="font-size: 12px; color: var(--text-muted); font-weight: 500;">
-                                    Model Threat Probability: <span id="resConfidenceText" style="color: #60a5fa; font-weight: 600;">--%</span>
+                                    Model Threat Probability: <span id="resConfidenceText" style="color: var(--primary); font-weight: 600;">--%</span>
                                 </div>
                             </div>
 

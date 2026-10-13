@@ -169,8 +169,8 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            background: rgba(96, 165, 250, 0.15);
-            color: #60a5fa;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -209,7 +209,7 @@
                     Sign In
                 </a>
                 <div id="navUserBadgeLanding" style="display: none; align-items: center; gap: 8px;">
-                    <span style="font-size: 13px; color: #60a5fa; font-weight: 600;" id="landingUsernameDisplay">User</span>
+                    <span style="font-size: 13px; color: var(--primary); font-weight: 600;" id="landingUsernameDisplay">User</span>
                     <a href="/dashboard" class="primary-button" style="padding: 6px 12px; font-size: 12px;">Dashboard</a>
                 </div>
             </div>
@@ -306,7 +306,7 @@
                                 <a href="/dashboard" class="primary-button" style="justify-content: center;">
                                     Go to Scanner Dashboard
                                 </a>
-                                <button onclick="logoutFromLanding()" class="secondary-button" style="justify-content: center; color: #f87171;">
+                                <button onclick="logoutFromLanding()" class="secondary-button" style="justify-content: center; color: var(--danger);">
                                     Sign Out
                                 </button>
                             </div>

@@ -1,6 +1,6 @@
 /* ==========================================================================
    PhishGuard - Modern, Human-Crafted Security Design System
-   Sleek Dark Slate Palette | Tactile Buttons | Clean Elevation
+   Professional White Theme | Tactile Buttons | Clean Elevation
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
@@ -9,51 +9,55 @@
     --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-    /* Theme Colors: Deep Sleek Slate */
-    --bg-page: #090d16;
-    --bg-surface: #0f172a;
-    --bg-surface-hover: #162238;
-    --bg-elevated: #1e293b;
-    --bg-input: #080d19;
+    /* Theme Colors: Professional White & Navy */
+    --bg-page: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-surface-hover: #eff6ff;
+    --bg-elevated: #ffffff;
+    --bg-input: #f8fafc;
 
-    --border-subtle: rgba(255, 255, 255, 0.08);
-    --border-medium: rgba(255, 255, 255, 0.14);
-    --border-highlight: rgba(255, 255, 255, 0.22);
-    --border-focus: #3b82f6;
+    --border-subtle: #e2e8f0;
+    --border-medium: #e2e8f0;
+    --border-highlight: #cbd5e1;
+    --border-focus: #2563eb;
 
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
+    --text-primary: #0f172a;
+    --text-body: #334155;
+    --text-secondary: #64748b;
     --text-muted: #64748b;
 
     /* Action & Status Accents */
     --primary: #2563eb;
-    --primary-hover: #3b82f6;
-    --primary-active: #1d4ed8;
-    --primary-glow: rgba(37, 99, 235, 0.3);
+    --primary-hover: #1d4ed8;
+    --primary-active: #1e40af;
+    --primary-glow: rgba(37, 99, 235, 0.2);
+    --accent: #0ea5e9;
+    --hover-bg: #eff6ff;
 
     --success: #10b981;
-    --success-subtle: rgba(16, 185, 129, 0.12);
-    --success-border: rgba(16, 185, 129, 0.35);
-    --success-text: #34d399;
+    --success-subtle: #ecfdf5;
+    --success-border: #a7f3d0;
+    --success-text: #047857;
 
     --warning: #f59e0b;
-    --warning-subtle: rgba(245, 158, 11, 0.12);
-    --warning-border: rgba(245, 158, 11, 0.35);
-    --warning-text: #fbbf24;
+    --warning-subtle: #fffbeb;
+    --warning-border: #fde68a;
+    --warning-text: #b45309;
 
     --danger: #ef4444;
-    --danger-subtle: rgba(239, 68, 68, 0.12);
-    --danger-border: rgba(239, 68, 68, 0.35);
-    --danger-text: #f87171;
+    --danger-subtle: #fef2f2;
+    --danger-border: #fecaca;
+    --danger-text: #b91c1c;
 
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 14px;
     --radius-full: 9999px;
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 8px 30px -4px rgba(0, 0, 0, 0.5);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
 }
 
 /* ==========================================================================
@@ -73,11 +77,15 @@ html {
 body {
     font-family: var(--font-sans);
     background-color: var(--bg-page);
-    color: var(--text-primary);
+    color: var(--text-body);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
 }
 
 a {
@@ -103,7 +111,7 @@ button, input, textarea, select {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(9, 13, 22, 0.92);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border-subtle);
@@ -155,18 +163,17 @@ button, input, textarea, select {
 }
 
 .nav-links a:hover {
-    color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--primary);
+    background: var(--hover-bg);
 }
 
 .nav-links a.active {
-    color: #ffffff;
-    background: rgba(37, 99, 235, 0.16);
-    border: 1px solid rgba(37, 99, 235, 0.35);
+    color: var(--primary);
+    background: #eff6ff;
+    border: 1px solid rgba(37, 99, 235, 0.25);
     font-weight: 600;
 }
 
-/* ==========================================================================
 /* ==========================================================================
    Actionable Buttons (Reworked for tactile clarity, contrast & elegance)
    ========================================================================== */
@@ -175,8 +182,8 @@ button, input, textarea, select {
 .primary-button, .cta-btn-primary {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(37, 99, 235, 0.4);
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25);
     padding: 9px 20px;
     border-radius: var(--radius-sm);
     font-size: 13.5px;
@@ -188,23 +195,22 @@ button, input, textarea, select {
     gap: 8px;
     transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     user-select: none;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
     letter-spacing: -0.01em;
 }
 
 .primary-button:hover, .cta-btn-primary:hover {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
     transform: translateY(-1.5px);
     box-shadow: 0 6px 18px var(--primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .primary-button:active, .cta-btn-primary:active {
     transform: translateY(0);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .primary-button:focus-visible {
-    outline: 2px solid #60a5fa;
+    outline: 2px solid var(--border-focus);
     outline-offset: 2px;
 }
 
@@ -217,10 +223,10 @@ button, input, textarea, select {
 
 /* 2. Secondary / Ghost Button */
 .secondary-button, .cta-btn-secondary {
-    background: #182235;
-    color: #e2e8f0 !important;
-    border: 1px solid var(--border-medium);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    background: #ffffff;
+    color: var(--text-body) !important;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     padding: 8px 18px;
     border-radius: var(--radius-sm);
     font-size: 13px;
@@ -235,20 +241,20 @@ button, input, textarea, select {
 }
 
 .secondary-button:hover, .cta-btn-secondary:hover {
-    background: #223048;
+    background: var(--hover-bg);
     border-color: var(--border-highlight);
-    color: #ffffff !important;
+    color: var(--primary) !important;
     transform: translateY(-1.5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .secondary-button:active, .cta-btn-secondary:active {
     transform: translateY(0);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .secondary-button:focus-visible {
-    outline: 2px solid #94a3b8;
+    outline: 2px solid var(--border-focus);
     outline-offset: 2px;
 }
 
@@ -344,9 +350,9 @@ button, input, textarea, select {
 }
 
 .btn-table-action {
-    background: rgba(37, 99, 235, 0.12) !important;
-    border: 1px solid rgba(37, 99, 235, 0.35) !important;
-    color: #93c5fd !important;
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+    color: var(--primary) !important;
     padding: 5px 12px;
     font-size: 11.5px;
     font-weight: 600;
@@ -360,17 +366,17 @@ button, input, textarea, select {
 }
 
 .btn-table-action:hover {
-    background: rgba(37, 99, 235, 0.28) !important;
-    border-color: #60a5fa !important;
+    background: var(--primary) !important;
+    border-color: var(--primary) !important;
     color: #ffffff !important;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 .btn-table-danger {
-    background: rgba(239, 68, 68, 0.12) !important;
-    border: 1px solid rgba(239, 68, 68, 0.35) !important;
-    color: #fca5a5 !important;
+    background: #fef2f2 !important;
+    border: 1px solid #fecaca !important;
+    color: #dc2626 !important;
     padding: 5px 12px;
     font-size: 11.5px;
     font-weight: 600;
@@ -384,17 +390,17 @@ button, input, textarea, select {
 }
 
 .btn-table-danger:hover {
-    background: rgba(239, 68, 68, 0.28) !important;
-    border-color: #ef4444 !important;
+    background: #dc2626 !important;
+    border-color: #dc2626 !important;
     color: #ffffff !important;
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
 }
 
 .btn-table-success {
-    background: rgba(16, 185, 129, 0.12) !important;
-    border: 1px solid rgba(16, 185, 129, 0.35) !important;
-    color: #6ee7b7 !important;
+    background: #ecfdf5 !important;
+    border: 1px solid #a7f3d0 !important;
+    color: #059669 !important;
     padding: 5px 12px;
     font-size: 11.5px;
     font-weight: 600;
@@ -408,11 +414,11 @@ button, input, textarea, select {
 }
 
 .btn-table-success:hover {
-    background: rgba(16, 185, 129, 0.28) !important;
-    border-color: #10b981 !important;
+    background: #059669 !important;
+    border-color: #059669 !important;
     color: #ffffff !important;
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
 }
 
 
@@ -540,7 +546,7 @@ button, input, textarea, select {
 .triage-target {
     font-family: var(--font-mono);
     font-size: 13px;
-    color: #e2e8f0;
+    color: var(--text-primary);
     background: var(--bg-input);
     padding: 8px 12px;
     border-radius: var(--radius-sm);
@@ -597,7 +603,7 @@ button, input, textarea, select {
 }
 
 .filter-bar input, .filter-bar select {
-    background: var(--bg-input);
+    background: #ffffff;
     border: 1px solid var(--border-medium);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
@@ -609,7 +615,7 @@ button, input, textarea, select {
 
 .filter-bar input:focus, .filter-bar select:focus {
     border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 /* ==========================================================================
@@ -630,7 +636,7 @@ button, input, textarea, select {
 
 .text-input, .textarea-input, .select-input {
     width: 100%;
-    background: var(--bg-input);
+    background: #ffffff;
     border: 1px solid var(--border-medium);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
@@ -642,7 +648,7 @@ button, input, textarea, select {
 
 .text-input:focus, .textarea-input:focus, .select-input:focus {
     border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .textarea-input {
@@ -695,11 +701,11 @@ button, input, textarea, select {
 .badge-pill.phishing::before { background: var(--danger); }
 
 .badge-pill.neutral {
-    background: rgba(255, 255, 255, 0.06);
+    background: #f1f5f9;
     color: var(--text-secondary);
-    border: 1px solid var(--border-medium);
+    border: 1px solid var(--border-subtle);
 }
-.badge-pill.neutral::before { background: var(--text-muted); }
+.badge-pill.neutral::before { background: var(--text-secondary); }
 
 /* ==========================================================================
    Modern Tables
@@ -718,8 +724,8 @@ button, input, textarea, select {
 }
 
 .history-table th {
-    background: #090e1a;
-    color: var(--text-muted);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
     padding: 11px 16px;
     font-weight: 600;
     font-size: 12px;
@@ -731,7 +737,7 @@ button, input, textarea, select {
 .history-table td {
     padding: 12px 16px;
     border-bottom: 1px solid var(--border-subtle);
-    color: var(--text-secondary);
+    color: var(--text-body);
     vertical-align: middle;
 }
 
@@ -740,7 +746,7 @@ button, input, textarea, select {
 }
 
 .history-table tr:hover td {
-    background: rgba(255, 255, 255, 0.025);
+    background: var(--hover-bg);
     color: var(--text-primary);
 }
 
@@ -762,7 +768,7 @@ button, input, textarea, select {
     align-items: center;
     justify-content: space-between;
     padding: 10px 18px;
-    background: #0a101f;
+    background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-subtle);
     flex-wrap: wrap;
     gap: 10px;
@@ -770,7 +776,7 @@ button, input, textarea, select {
 
 .scanner-tabs {
     display: flex;
-    background: var(--bg-input);
+    background: #ffffff;
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
     padding: 3px;
@@ -790,7 +796,7 @@ button, input, textarea, select {
 }
 
 .scanner-tabs .tab-btn:hover {
-    color: var(--text-primary);
+    color: var(--primary);
 }
 
 .scanner-tabs .tab-btn.active {
@@ -827,7 +833,7 @@ button, input, textarea, select {
 
 .chart-bar-track {
     height: 8px;
-    background: var(--bg-input);
+    background: #e2e8f0;
     border-radius: var(--radius-full);
     overflow: hidden;
     border: 1px solid var(--border-subtle);
@@ -853,10 +859,10 @@ button, input, textarea, select {
 .reasons-list li {
     font-size: 13px;
     line-height: 1.5;
-    color: var(--text-primary);
+    color: var(--text-body);
     padding: 8px 12px;
     border-radius: var(--radius-sm);
-    background: var(--bg-input);
+    background: var(--bg-secondary);
     border: 1px solid var(--border-subtle);
 }
 
