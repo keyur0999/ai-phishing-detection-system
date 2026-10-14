@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Management | PhishGuard AI</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .db-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            border-bottom: 2px solid var(--border-subtle);
+            margin-bottom: 20px;
+        }
+        .db-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .db-tab-btn:hover {
+            color: var(--primary);
+            background-color: var(--hover-bg);
+        }
+        .db-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background-color: #ffffff;
+        }
+        .db-tab-count {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: var(--bg-secondary);
+            color: var(--text-body);
+            border: 1px solid var(--border-subtle);
+        }
+        .db-tab-btn.active .db-tab-count {
+            background: #dbeafe;
+            color: var(--primary);
+            border-color: #bfdbfe;
+        }
+        .db-controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            background: var(--bg-secondary);
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+        }
+        .db-search-box {
+            position: relative;
+            flex: 1;
+            min-width: 260px;
+            max-width: 420px;
+        }
+        .db-search-input {
+            width: 100%;
+            padding: 9px 34px 9px 36px;
+            font-size: 13.5px;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            background: #ffffff;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .db-search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+        .db-search-icon {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+        .db-search-clear {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--text-muted);
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            display: none;
+        }
+        .db-sort-select {
+            padding: 9px 12px;
+            font-size: 13px;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            background: #ffffff;
+            color: var(--text-body);
+            outline: none;
+            cursor: pointer;
+        }
+        .db-pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-subtle);
+        }
+        .pagination-pages {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .pg-btn {
+            min-width: 34px;
+            height: 34px;
+            padding: 0 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-body);
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pg-btn:hover:not(:disabled) {
+            background: var(--hover-bg);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .pg-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+        .pg-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .sortable-th {
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            transition: background-color 0.15s ease;
+        }
+        .sortable-th:hover {
+            background-color: var(--hover-bg);
+            color: var(--primary);
+        }
+        .sort-caret {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 11px;
+            opacity: 0.6;
+        }
+        .sortable-th.active-sort .sort-caret {
+            opacity: 1;
+            color: var(--primary);
+            font-weight: 800;
+        }
+        .mono-cell {
+            font-family: var(--font-mono);
+            font-size: 12.5px;
+        }
+        .cell-truncate {
+            max-width: 280px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .empty-state-box {
+            text-align: center;
+            padding: 48px 20px;
+            background: #ffffff;
+            border: 1px dashed var(--border-subtle);
+            border-radius: var(--radius-md);
+            margin: 16px 0;
+        }
+        .empty-state-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            opacity: 0.8;
+        }
+        .empty-state-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .empty-state-desc {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            max-width: 440px;
+            margin: 0 auto;
+        }
+        .tag-pill {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 999px;
+            margin: 2px;
+            background: var(--bg-secondary);
+            color: var(--text-body);
+            border: 1px solid var(--border-subtle);
+        }
+        .db-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .loading-shimmer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Unified Role Navbar -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/admin" class="logo">
+                <span class="logo-icon">🛡️</span>
+                <span>PhishGuard</span>
+            </a>
+
+            <nav class="nav-links" id="navLinks">
+                <a href="/admin">Admin Dashboard</a>
+                <a href="/database" class="active">Database Management</a>
+                <a href="/users">Manage Users</a>
+                <a href="/analyst">Analyst Queue</a>
+                <a href="/analytics">Detection Analytics</a>
+                <a href="/history">Scan History</a>
+                <a href="/indicators">Blocklist Rules</a>
+            </nav>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="userBadge" class="badge-pill phishing" style="font-size: 12px;">⚙️ Administrator</span>
+                <a href="/login" id="authBtn" class="secondary-button" style="padding: 6px 12px; font-size: 12px;">Sign Out</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top: 28px; padding-bottom: 70px;">
+        <!-- Page Title & Quick Actions -->
+        <div class="page-header">
+            <div class="page-header-text">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span style="font-size: 20px;">🗄️</span>
+                    <h1 style="font-size: 24px; font-weight: 800; margin: 0;">Database Management Console</h1>
+                </div>
+                <p>Inspect and query live SQLite records from <code>phishguard.db</code> in real-time. Secure, parameterized, and password-redacted.</p>
+            </div>
+            <div class="page-header-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="secondary-button" onclick="loadTableData()" title="Reload records from SQLite database" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <span>🔄</span> Refresh View
+                </button>
+                <a href="/admin" class="primary-button" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <span>⬅</span> Admin Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Database Health & Overview Metrics -->
+        <div class="stats-overview" style="margin-bottom: 24px;">
+            <div class="stat-card">
+                <div class="stat-num" id="statTotalTables">6</div>
+                <div class="stat-label">Active Database Tables</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="statTotalRows">--</div>
+                <div class="stat-label">Total Stored Records</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="statTotalScans">--</div>
+                <div class="stat-label">Scan History Records</div>
+            </div>
+            <div class="stat-card stat-phishing">
+                <div class="stat-num" id="statTotalUsers">--</div>
+                <div class="stat-label">Registered Accounts</div>
+            </div>
+        </div>
+
+        <!-- Metadata Strip -->
+        <div class="meta-grid" style="margin-bottom: 24px;">
+            <div class="meta-item">
+                <div class="meta-label">Storage Engine</div>
+                <div class="meta-value">SQLite 3 (WAL / Foreign Keys On)</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Database File</div>
+                <div class="meta-value mono-cell">phishguard.db</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Access Level</div>
+                <div class="meta-value" style="color: var(--success); font-weight: 700;">Admin Authorized (Read-Only Viewer)</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Credential Redaction</div>
+                <div class="meta-value" style="color: var(--primary); font-weight: 600;">Active (password_hash Omitted)</div>
+            </div>
+        </div>
+
+        <!-- Main Card Container -->
+        <div class="triage-card" style="padding: 24px;">
+            <!-- Table Selection Tabs -->
+            <div class="db-tabs" id="dbTableTabs">
+                <button class="db-tab-btn active" data-table="users" onclick="switchTable('users')">
+                    <span>👤 Users</span>
+                    <span class="db-tab-count" id="badge-users">0</span>
+                </button>
+                <button class="db-tab-btn" data-table="scans" onclick="switchTable('scans')">
+                    <span>🔍 Scans</span>
+                    <span class="db-tab-count" id="badge-scans">0</span>
+                </button>
+                <button class="db-tab-btn" data-table="reports" onclick="switchTable('reports')">
+                    <span>📑 Reports</span>
+                    <span class="db-tab-count" id="badge-reports">0</span>
+                </button>
+                <button class="db-tab-btn" data-table="blocklist" onclick="switchTable('blocklist')">
+                    <span>🚫 Blocklist</span>
+                    <span class="db-tab-count" id="badge-blocklist">0</span>
+                </button>
+                <button class="db-tab-btn" data-table="threat_indicators" onclick="switchTable('threat_indicators')">
+                    <span>⚡ Threat Indicators</span>
+                    <span class="db-tab-count" id="badge-threat_indicators">0</span>
+                </button>
+                <button class="db-tab-btn" data-table="user_logins" onclick="switchTable('user_logins')">
+                    <span>🛡️ Login Audit</span>
+                    <span class="db-tab-count" id="badge-user_logins">0</span>
+                </button>
+            </div>
+
+            <!-- Active Table Info Header -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <h2 id="activeTableHeading" style="font-size: 18px; font-weight: 700; margin: 0 0 4px 0;">Table: users</h2>
+                    <p id="activeTableDescription" style="font-size: 13px; color: var(--text-secondary); margin: 0;">User accounts and role permissions (passwords excluded)</p>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span class="db-chip" id="tableRecordStats">Loading records...</span>
+                </div>
+            </div>
+
+            <!-- Table Controls: Search, Sort & Page Size -->
+            <div class="db-controls-bar">
+                <!-- Search Box -->
+                <div class="db-search-box">
+                    <span class="db-search-icon">🔎</span>
+                    <input type="text" id="dbSearchInput" class="db-search-input" placeholder="Search across table records..." oninput="handleSearchInput(event)">
+                    <button id="dbSearchClear" class="db-search-clear" onclick="clearSearch()" title="Clear search">✕</button>
+                </div>
+
+                <!-- Sort & Display Controls -->
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 12.5px; color: var(--text-secondary); font-weight: 600;">Sort:</span>
+                        <select id="dbSortColumnSelect" class="db-sort-select" onchange="handleSortColumnChange(event)">
+                            <!-- Populated dynamically -->
+                        </select>
+                        <button class="secondary-button" id="dbSortOrderBtn" onclick="toggleSortOrder()" style="padding: 7px 11px; font-size: 12.5px;" title="Toggle Ascending/Descending">
+                            <span id="dbSortOrderLabel">DESC ▼</span>
+                        </button>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 12.5px; color: var(--text-secondary); font-weight: 600;">Show:</span>
+                        <select id="dbPerPageSelect" class="db-sort-select" onchange="handlePerPageChange(event)">
+                            <option value="10">10 rows</option>
+                            <option value="15" selected>15 rows</option>
+                            <option value="25">25 rows</option>
+                            <option value="50">50 rows</option>
+                            <option value="100">100 rows</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Presentation Container -->
+            <div class="table-wrap" id="tableContainer">
+                <div class="loading-shimmer">
+                    <span>⏳ Fetching database records from SQLite...</span>
+                </div>
+            </div>
+
+            <!-- Empty State Container (Hidden by default) -->
+            <div id="emptyStateContainer" class="empty-state-box" style="display: none;">
+                <div class="empty-state-icon" id="emptyStateIcon">📂</div>
+                <div class="empty-state-title" id="emptyStateTitle">No Records Found</div>
+                <p class="empty-state-desc" id="emptyStateDesc">There are currently no rows stored in this table.</p>
+                <div style="margin-top: 14px;" id="emptyStateAction">
+                    <button class="secondary-button" onclick="clearSearch()" id="emptyClearBtn" style="display: none;">Clear Search Filter</button>
+                </div>
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="db-pagination-bar" id="paginationBar">
+                <div style="font-size: 13px; color: var(--text-secondary);" id="paginationSummary">
+                    Showing 0 of 0 records
+                </div>
+                <div class="pagination-pages" id="paginationButtons">
+                    <!-- Dynamic page buttons rendered here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="nav.js"></script>
+    <script>
+        // State variables
+        let currentTable = "users";
+        let currentPage = 1;
+        let currentPerPage = 15;
+        let currentSearch = "";
+        let currentSort = "id";
+        let currentOrder = "DESC";
+        let searchDebounceTimer = null;
+        let tablesMetadata = {};
+
+        // Initialization
+        document.addEventListener("DOMContentLoaded", async () => {
+            const user = await setupRoleNavigation("database");
+            if (!user || user.role !== "admin") {
+                // Server will also enforce this with 401/403, but provide clean immediate UI redirect
+                window.location.href = "/login?next=/database&unauthorized=1";
+                return;
+            }
+
+            // Check URL parameters for initial table selection
+            const urlParams = new URLSearchParams(window.location.search);
+            const requestedTable = urlParams.get("table");
+            if (requestedTable && ["users", "scans", "reports", "blocklist", "threat_indicators", "user_logins"].includes(requestedTable)) {
+                currentTable = requestedTable;
+            }
+
+            await loadDatabaseSummary();
+            await loadTableData();
+        });
+
+        // 1. Fetch table summary & row counts
+        async function loadDatabaseSummary() {
+            try {
+                const res = await fetch("/api/admin/database/tables");
+                if (res.status === 401 || res.status === 403) {
+                    window.location.href = "/login?next=/database";
+                    return;
+                }
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || "Failed to load summary");
+
+                let grandTotalRows = 0;
+                let scansCount = 0;
+                let usersCount = 0;
+
+                data.tables.forEach(tbl => {
+                    tablesMetadata[tbl.table_name] = tbl;
+                    grandTotalRows += tbl.row_count;
+
+                    // Update tab badges
+                    const badge = document.getElementById(`badge-${tbl.table_name}`);
+                    if (badge) badge.textContent = tbl.row_count;
+
+                    if (tbl.table_name === "scans") scansCount = tbl.row_count;
+                    if (tbl.table_name === "users") usersCount = tbl.row_count;
+                });
+
+                // Update summary stat cards
+                document.getElementById("statTotalTables").textContent = data.tables.length;
+                document.getElementById("statTotalRows").textContent = grandTotalRows.toLocaleString();
+                document.getElementById("statTotalScans").textContent = scansCount.toLocaleString();
+                document.getElementById("statTotalUsers").textContent = usersCount.toLocaleString();
+
+                updateTabsActiveState();
+            } catch (err) {
+                console.error("Error loading database overview:", err);
+            }
+        }
+
+        // 2. Switch active table
+        function switchTable(tableName) {
+            if (currentTable === tableName) return;
+            currentTable = tableName;
+            currentPage = 1;
+            currentSearch = "";
+            document.getElementById("dbSearchInput").value = "";
+            document.getElementById("dbSearchClear").style.display = "none";
+            
+            // Set default sort column to 'id'
+            currentSort = "id";
+            currentOrder = "DESC";
+            document.getElementById("dbSortOrderLabel").textContent = "DESC ▼";
+
+            // Update URL without reloading page
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set("table", tableName);
+            window.history.replaceState({}, "", newUrl);
+
+            updateTabsActiveState();
+            loadTableData();
+        }
+
+        function updateTabsActiveState() {
+            document.querySelectorAll(".db-tab-btn").forEach(btn => {
+                if (btn.getAttribute("data-table") === currentTable) {
+                    btn.classList.add("active");
+                } else {
+                    btn.classList.remove("active");
+                }
+            });
+
+            const meta = tablesMetadata[currentTable];
+            if (meta) {
+                document.getElementById("activeTableHeading").textContent = `Table: ${meta.display_name} (${meta.table_name})`;
+                document.getElementById("activeTableDescription").textContent = meta.description;
+            }
+        }
+
+        // 3. Load paginated table records
+        async function loadTableData() {
+            const container = document.getElementById("tableContainer");
+            const emptyBox = document.getElementById("emptyStateContainer");
+            const paginationBar = document.getElementById("paginationBar");
+
+            container.innerHTML = `
+                <div class="loading-shimmer">
+                    <span>⏳ Fetching live records from SQLite table <strong>${currentTable}</strong>...</span>
+                </div>
+            `;
+            emptyBox.style.display = "none";
+
+            try {
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    per_page: currentPerPage,
+                    search: currentSearch,
+                    sort_by: currentSort,
+                    order: currentOrder
+                });
+
+                const res = await fetch(`/api/admin/database/${currentTable}?${params.toString()}`);
+                if (res.status === 401 || res.status === 403) {
+                    window.location.href = "/login?next=/database";
+                    return;
+                }
+
+                const result = await res.json();
+                if (!result.success) {
+                    throw new Error(result.message || "Failed to load records");
+                }
+
+                const data = result.data;
+                renderSortDropdown(data.columns);
+                renderTableRecords(data);
+                renderPagination(data);
+
+                // Update tab badge count with latest total count
+                const badge = document.getElementById(`badge-${currentTable}`);
+                if (badge) badge.textContent = data.total_count;
+
+            } catch (err) {
+                console.error("Error loading table data:", err);
+                container.innerHTML = `
+                    <div class="empty-state-box" style="border-color: var(--danger-border); background: var(--danger-subtle);">
+                        <div class="empty-state-icon" style="color: var(--danger);">⚠️</div>
+                        <div class="empty-state-title" style="color: var(--danger-text);">Error Loading Records</div>
+                        <p class="empty-state-desc" style="color: var(--danger-text);">${escapeHtml(err.message)}</p>
+                        <button class="secondary-button" style="margin-top: 12px;" onclick="loadTableData()">Retry Query</button>
+                    </div>
+                `;
+                paginationBar.style.display = "none";
+            }
+        }
+
+        // 4. Render sort dropdown options
+        function renderSortDropdown(columns) {
+            const select = document.getElementById("dbSortColumnSelect");
+            select.innerHTML = columns.map(col => `
+                <option value="${col}" ${col === currentSort ? "selected" : ""}>${col}</option>
+            `).join("");
+        }
+
+        // 5. Render HTML table records
+        function renderTableRecords(data) {
+            const container = document.getElementById("tableContainer");
+            const emptyBox = document.getElementById("emptyStateContainer");
+            const paginationBar = document.getElementById("paginationBar");
+            const statsChip = document.getElementById("tableRecordStats");
+
+            const { columns, records, total_count, filtered_count, page, per_page, total_pages, search } = data;
+
+            // Handle empty state
+            if (records.length === 0) {
+                container.innerHTML = "";
+                emptyBox.style.display = "block";
+                paginationBar.style.display = "none";
+
+                if (search) {
+                    document.getElementById("emptyStateIcon").textContent = "🔍";
+                    document.getElementById("emptyStateTitle").textContent = "No Matches Found";
+                    document.getElementById("emptyStateDesc").textContent = `No records matched your search query "${search}". Try adjusting your keywords.`;
+                    document.getElementById("emptyClearBtn").style.display = "inline-block";
+                    statsChip.textContent = `0 of ${total_count} records`;
+                } else {
+                    document.getElementById("emptyStateIcon").textContent = "📂";
+                    document.getElementById("emptyStateTitle").textContent = `Table '${data.display_name}' is Empty`;
+                    document.getElementById("emptyStateDesc").textContent = "No records currently exist in this database table.";
+                    document.getElementById("emptyClearBtn").style.display = "none";
+                    statsChip.textContent = `0 records`;
+                }
+                return;
+            }
+
+            emptyBox.style.display = "none";
+            paginationBar.style.display = "flex";
+
+            const startIdx = (page - 1) * per_page + 1;
+            const endIdx = Math.min(startIdx + records.length - 1, filtered_count);
+            statsChip.textContent = search 
+                ? `Showing ${startIdx}-${endIdx} of ${filtered_count} (filtered from ${total_count})`
+                : `Showing ${startIdx}-${endIdx} of ${total_count} records`;
+
+            // Build Table HTML
+            let html = `
+                <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            ${columns.map(col => {
+                                const isActive = col === currentSort;
+                                const caret = isActive ? (currentOrder === "ASC" ? "▲" : "▼") : "↕";
+                                return `
+                                    <th class="sortable-th ${isActive ? 'active-sort' : ''}" onclick="sortByColumn('${col}')" title="Click to sort by ${col}">
+                                        ${col}
+                                        <span class="sort-caret">${caret}</span>
+                                    </th>
+                                `;
+                            }).join("")}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            records.forEach(row => {
+                html += `<tr>`;
+                columns.forEach(col => {
+                    const val = row[col];
+                    html += `<td>${formatCellValue(col, val, row)}</td>`;
+                });
+                html += `</tr>`;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // 6. Format cell values with styling & safe badges
+        function formatCellValue(col, val, row) {
+            if (val === null || val === undefined) {
+                return `<span style="color: var(--text-muted); font-style: italic;">NULL</span>`;
+            }
+
+            // ID column
+            if (col === "id" || col === "user_id" || col === "scan_id") {
+                return `<span class="mono-cell" style="font-weight: 600; color: var(--text-primary);">#${escapeHtml(String(val))}</span>`;
+            }
+
+            // Role column
+            if (col === "role") {
+                const badgeClass = val === "admin" ? "phishing" : (val === "analyst" ? "suspicious" : "neutral");
+                const icon = val === "admin" ? "👑" : (val === "analyst" ? "🛡️" : "👤");
+                return `<span class="badge-pill ${badgeClass}">${icon} ${escapeHtml(String(val))}</span>`;
+            }
+
+            // Verdict column
+            if (col === "verdict") {
+                const badgeClass = val === "phishing" ? "phishing" : (val === "suspicious" ? "suspicious" : "safe");
+                const icon = val === "phishing" ? "🚨" : (val === "suspicious" ? "⚠️" : "✅");
+                return `<span class="badge-pill ${badgeClass}">${icon} ${escapeHtml(String(val).toUpperCase())}</span>`;
+            }
+
+            // Status column (reports, logins)
+            if (col === "status") {
+                let badgeClass = "neutral";
+                if (val === "success" || val === "resolved") badgeClass = "safe";
+                if (val === "pending" || val === "reviewed") badgeClass = "suspicious";
+                if (val === "failed" || val === "dismissed") badgeClass = "phishing";
+                return `<span class="badge-pill ${badgeClass}">${escapeHtml(String(val))}</span>`;
+            }
+
+            // Risk Score column
+            if (col === "risk_score") {
+                const score = Number(val);
+                let colorClass = "safe";
+                if (score >= 60) colorClass = "phishing";
+                else if (score >= 30) colorClass = "suspicious";
+                return `
+                    <span class="badge-pill ${colorClass}" style="font-weight: 700;">
+                        ${score}/100
+                    </span>
+                `;
+            }
+
+            // Reasons JSON string
+            if (col === "reasons") {
+                try {
+                    const parsed = typeof val === "string" ? JSON.parse(val) : val;
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        return parsed.map(r => `<span class="tag-pill" title="${escapeHtml(String(r))}">${escapeHtml(String(r).slice(0, 32))}${r.length > 32 ? '...' : ''}</span>`).join("");
+                    }
+                    return `<span style="color: var(--text-muted); font-size: 12px;">None</span>`;
+                } catch {
+                    return `<span class="cell-truncate mono-cell" title="${escapeHtml(String(val))}">${escapeHtml(String(val))}</span>`;
+                }
+            }
+
+            // Input Data / Long Strings
+            if (col === "input_data" || col === "user_agent" || col === "reason" || col === "domain") {
+                const str = String(val);
+                return `<span class="cell-truncate" title="${escapeHtml(str)}" style="display: block;">${escapeHtml(str)}</span>`;
+            }
+
+            // Dates & Timestamps
+            if (col.includes("_at") || col.includes("_time")) {
+                return `<span class="mono-cell" style="font-size: 12px; color: var(--text-secondary);">${escapeHtml(String(val))}</span>`;
+            }
+
+            return escapeHtml(String(val));
+        }
+
+        // 7. Render pagination buttons
+        function renderPagination(data) {
+            const { page, total_pages, total_count, filtered_count, per_page } = data;
+            const summary = document.getElementById("paginationSummary");
+            const btnContainer = document.getElementById("paginationButtons");
+
+            const startIdx = (page - 1) * per_page + 1;
+            const endIdx = Math.min(startIdx + data.records.length - 1, filtered_count);
+            summary.textContent = `Page ${page} of ${total_pages} (${startIdx}-${endIdx} of ${filtered_count} records)`;
+
+            let buttonsHtml = '';
+
+            // Previous Button
+            buttonsHtml += `
+                <button class="pg-btn" onclick="goToPage(${page - 1})" ${page <= 1 ? "disabled" : ""} title="Previous Page">
+                    ◀
+                </button>
+            `;
+
+            // Page numbers
+            const maxVisible = 5;
+            let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+            let endPage = Math.min(total_pages, startPage + maxVisible - 1);
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+
+            if (startPage > 1) {
+                buttonsHtml += `<button class="pg-btn" onclick="goToPage(1)">1</button>`;
+                if (startPage > 2) buttonsHtml += `<span style="padding: 0 4px; color: var(--text-muted);">...</span>`;
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                buttonsHtml += `
+                    <button class="pg-btn ${i === page ? 'active' : ''}" onclick="goToPage(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+
+            if (endPage < total_pages) {
+                if (endPage < total_pages - 1) buttonsHtml += `<span style="padding: 0 4px; color: var(--text-muted);">...</span>`;
+                buttonsHtml += `<button class="pg-btn" onclick="goToPage(${total_pages})">${total_pages}</button>`;
+            }
+
+            // Next Button
+            buttonsHtml += `
+                <button class="pg-btn" onclick="goToPage(${page + 1})" ${page >= total_pages ? "disabled" : ""} title="Next Page">
+                    ▶
+                </button>
+            `;
+
+            btnContainer.innerHTML = buttonsHtml;
+        }
+
+        // 8. Event Handlers
+        function goToPage(page) {
+            currentPage = page;
+            loadTableData();
+        }
+
+        function handlePerPageChange(event) {
+            currentPerPage = parseInt(event.target.value, 10);
+            currentPage = 1;
+            loadTableData();
+        }
+
+        function sortByColumn(col) {
+            if (currentSort === col) {
+                currentOrder = currentOrder === "ASC" ? "DESC" : "ASC";
+            } else {
+                currentSort = col;
+                currentOrder = "DESC";
+            }
+            document.getElementById("dbSortOrderLabel").textContent = currentOrder === "ASC" ? "ASC ▲" : "DESC ▼";
+            currentPage = 1;
+            loadTableData();
+        }
+
+        function handleSortColumnChange(event) {
+            currentSort = event.target.value;
+            currentPage = 1;
+            loadTableData();
+        }
+
+        function toggleSortOrder() {
+            currentOrder = currentOrder === "ASC" ? "DESC" : "ASC";
+            document.getElementById("dbSortOrderLabel").textContent = currentOrder === "ASC" ? "ASC ▲" : "DESC ▼";
+            currentPage = 1;
+            loadTableData();
+        }
+
+        function handleSearchInput(event) {
+            const query = event.target.value;
+            document.getElementById("dbSearchClear").style.display = query.length > 0 ? "block" : "none";
+            
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => {
+                currentSearch = query.trim();
+                currentPage = 1;
+                loadTableData();
+            }, 350);
+        }
+
+        function clearSearch() {
+            document.getElementById("dbSearchInput").value = "";
+            document.getElementById("dbSearchClear").style.display = "none";
+            currentSearch = "";
+            currentPage = 1;
+            loadTableData();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>

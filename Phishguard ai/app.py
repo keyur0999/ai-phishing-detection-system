@@ -177,6 +177,14 @@ def users_page():
     return send_from_directory(FRONTEND_DIR, "users.html")
 
 
+@app.route("/admin/database")
+@app.route("/database")
+@admin_required
+def database_management_page():
+    return send_from_directory(FRONTEND_DIR, "database.html")
+
+
+
 @app.route("/analytics")
 @analyst_required
 def analytics_page():
@@ -832,6 +840,48 @@ def admin_blocklist_delete(entry_id):
     if not deleted:
         return jsonify({"success": False, "message": "Blocklist entry not found."}), 404
     return jsonify({"success": True, "message": "Blocklist entry removed."})
+
+
+# ---------------------------------------------------------------------------
+# Database Management API (Admin-Only, Strictly Parameterized)
+# ---------------------------------------------------------------------------
+
+@app.route("/api/admin/database/tables", methods=["GET"])
+@admin_required
+def admin_database_tables():
+    """Retrieve metadata and row counts for all active database tables."""
+    try:
+        summary = database.get_database_summary()
+        return jsonify({"success": True, "tables": summary})
+    except Exception as e:
+        return jsonify({"success": False, "message": "Failed to load database tables."}), 500
+
+
+@app.route("/api/admin/database/<table_name>", methods=["GET"])
+@admin_required
+def admin_database_table_records(table_name):
+    """Safely fetch paginated, sorted, and filtered records for a table."""
+    page = request.args.get("page", 1)
+    per_page = request.args.get("per_page", 15)
+    search = request.args.get("search", "")
+    sort_by = request.args.get("sort_by", None)
+    order = request.args.get("order", "DESC")
+
+    try:
+        data = database.get_table_records(
+            table_name=table_name,
+            page=page,
+            per_page=per_page,
+            search=search,
+            sort_by=sort_by,
+            order=order,
+        )
+        return jsonify({"success": True, "data": data})
+    except ValueError as ve:
+        return jsonify({"success": False, "message": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"success": False, "message": "An error occurred retrieving records."}), 500
+
 
 
 if __name__ == "__main__":

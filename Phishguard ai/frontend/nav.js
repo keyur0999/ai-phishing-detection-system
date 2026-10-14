@@ -57,6 +57,7 @@ async function setupRoleNavigation(activePage) {
                 // Admin: Full company administration & security oversight
                 links = [
                     { name: "Admin Dashboard", url: "/admin", key: "admin" },
+                    { name: "Database Management", url: "/database", key: "database" },
                     { name: "Manage Users", url: "/users", key: "users" },
                     { name: "Analyst Queue", url: "/analyst", key: "analyst" },
                     { name: "Detection Analytics", url: "/analytics", key: "analytics" },

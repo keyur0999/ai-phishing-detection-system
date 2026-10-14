@@ -538,3 +538,164 @@ def get_analytics_data():
         }
 
 
+# ---------------------------------------------------------------------------
+# Database Management Console (Strictly Param & Admin Only)
+# ---------------------------------------------------------------------------
+
+MANAGED_TABLES = {
+    "users": {
+        "display_name": "Users",
+        "description": "User accounts and role permissions (passwords excluded)",
+        # Strictly omit password_hash for security
+        "columns": ["id", "username", "email", "role", "created_at", "last_login_at", "login_count"],
+        "search_columns": ["username", "email", "role"],
+        "default_sort": "id",
+    },
+    "scans": {
+        "display_name": "Scan History",
+        "description": "Historical phishing and threat detection records",
+        "columns": ["id", "user_id", "scan_type", "input_data", "verdict", "risk_score", "reasons", "created_at"],
+        "search_columns": ["scan_type", "input_data", "verdict"],
+        "default_sort": "id",
+    },
+    "reports": {
+        "display_name": "Threat Reports",
+        "description": "User reported suspected scams and verification status",
+        "columns": ["id", "scan_id", "user_id", "reason", "status", "created_at"],
+        "search_columns": ["reason", "status"],
+        "default_sort": "id",
+    },
+    "blocklist": {
+        "display_name": "Blocklist",
+        "description": "Known malicious domains and threat justifications",
+        "columns": ["id", "domain", "reason", "added_at"],
+        "search_columns": ["domain", "reason"],
+        "default_sort": "id",
+    },
+    "threat_indicators": {
+        "display_name": "Threat Indicators",
+        "description": "Detection heuristics, keywords, and pattern weights",
+        "columns": ["id", "indicator", "category", "weight", "added_at"],
+        "search_columns": ["indicator", "category"],
+        "default_sort": "id",
+    },
+    "user_logins": {
+        "display_name": "Login Audit Logs",
+        "description": "Authentication audit trail with IP addresses and user agents",
+        "columns": ["id", "user_id", "username", "ip_address", "user_agent", "login_time", "status"],
+        "search_columns": ["username", "ip_address", "user_agent", "status"],
+        "default_sort": "id",
+    },
+}
+
+
+def get_database_summary():
+    """Retrieve metadata and row counts for all managed tables."""
+    import math
+    summary = []
+    with get_connection() as conn:
+        for tbl_name, config in MANAGED_TABLES.items():
+            row = conn.execute(f"SELECT COUNT(*) AS c FROM {tbl_name}").fetchone()
+            count = row["c"] if row else 0
+            summary.append({
+                "table_name": tbl_name,
+                "display_name": config["display_name"],
+                "description": config["description"],
+                "row_count": count,
+                "columns": config["columns"],
+            })
+    return summary
+
+
+def get_table_records(table_name, page=1, per_page=15, search="", sort_by=None, order="DESC"):
+    """
+    Safely fetch paginated, sorted, and filtered records from an allowed SQLite table.
+    Uses strict parameterized queries and whitelisted column identifiers.
+    """
+    import math
+    if table_name not in MANAGED_TABLES:
+        raise ValueError(f"Table '{table_name}' is not accessible or does not exist.")
+
+    config = MANAGED_TABLES[table_name]
+    allowed_cols = config["columns"]
+    search_cols = config["search_columns"]
+
+    # Sanitize pagination parameters
+    try:
+        page = max(1, int(page))
+    except (TypeError, ValueError):
+        page = 1
+
+    try:
+        per_page = max(5, min(100, int(per_page)))
+    except (TypeError, ValueError):
+        per_page = 15
+
+    # Sanitize sort column and direction
+    if not sort_by or sort_by not in allowed_cols:
+        sort_by = config["default_sort"]
+    
+    order = "ASC" if str(order).upper() == "ASC" else "DESC"
+
+    select_clause = ", ".join(allowed_cols)
+    where_parts = []
+    params = []
+
+    if search and search.strip():
+        term = f"%{search.strip()}%"
+        search_clauses = [f"{col} LIKE ?" for col in search_cols]
+        where_parts.append(f"({' OR '.join(search_clauses)})")
+        params.extend([term] * len(search_cols))
+
+    where_sql = ("WHERE " + " AND ".join(where_parts)) if where_parts else ""
+
+    with get_connection() as conn:
+        # Total records without filter
+        total_count = conn.execute(f"SELECT COUNT(*) AS c FROM {table_name}").fetchone()["c"]
+
+        # Filtered count
+        if where_sql:
+            filtered_count = conn.execute(
+                f"SELECT COUNT(*) AS c FROM {table_name} {where_sql}",
+                params
+            ).fetchone()["c"]
+        else:
+            filtered_count = total_count
+
+        total_pages = max(1, math.ceil(filtered_count / per_page))
+        if page > total_pages and filtered_count > 0:
+            page = total_pages
+        offset = (page - 1) * per_page
+
+        query_sql = f"""
+            SELECT {select_clause}
+            FROM {table_name}
+            {where_sql}
+            ORDER BY {sort_by} {order}
+            LIMIT ? OFFSET ?
+        """
+        query_params = list(params) + [per_page, offset]
+
+        rows = conn.execute(query_sql, query_params).fetchall()
+        records = []
+        for r in rows:
+            rec = dict(r)
+            records.append(rec)
+
+        return {
+            "table_name": table_name,
+            "display_name": config["display_name"],
+            "columns": allowed_cols,
+            "records": records,
+            "total_count": total_count,
+            "filtered_count": filtered_count,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": total_pages,
+            "sort_by": sort_by,
+            "order": order,
+            "search": search.strip() if search else "",
+        }
+
+
+
